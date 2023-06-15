@@ -261,27 +261,18 @@ for epoch in range(500):
     losses.append(epoch_loss)
 
     # Plot the list of losses
-    plt.plot(losses)
-    plt.title("Loss per Epoch")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.show()
+    if epoch % 10 == 0:
+        path = 'VAEInterpolator/graphs/'
+        plt.plot(losses)
+        plt.title("Loss per Epoch")
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.savefig(path + 'loss' + str(epoch) + '.png')
     
-    plt.subplot(1,2,1)
-    show_tensor_images(frames_2)
-    plt.title("True")
-    plt.subplot(1,2,2)
-    show_tensor_images(recon_images)
-    plt.title("Reconstructed")
-    plt.show()
-
-
-import cv2
-import matplotlib.pyplot as plt
-
-img = cv2.imread('frame2.jpg', cv2.IMREAD_GRAYSCALE)
-print(img.shape)
-img = pre_process(img, binarize_at=0.75, resize_to=(94,94))
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-plt.imshow(img)
-plt.axis('off')
+        plt.subplot(1,2,1)
+        show_tensor_images(frames_2)
+        plt.title("True")
+        plt.subplot(1,2,2)
+        show_tensor_images(recon_images)
+        plt.title("Reconstructed")
+        plt.savefig(path + 'recon' + str(epoch) + '.png')

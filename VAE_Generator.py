@@ -1,5 +1,3 @@
-# Model Modules (Encoder & Decoder)
-
 import torch
 import torch.nn as nn
 
@@ -12,7 +10,7 @@ class Encoder(nn.Module):
     hidden_dim: the inner dimension, a scalar
     '''
 
-    def __init__(self, im_chan=2, output_chan=32, hidden_dim=16):
+    def __init__(self, im_chan=1, output_chan=32, hidden_dim=16):
         super(Encoder, self).__init__()
         self.z_dim = output_chan
         self.disc = nn.Sequential(
@@ -45,14 +43,14 @@ class Encoder(nn.Module):
                 nn.Conv2d(input_channels, output_channels, kernel_size, stride),
             )
 
-    def forward(self, frame_1, frame_3):
+    def forward(self, image):
         '''
         Function for completing a forward pass of the Encoder: Given an image tensor, 
         returns a 1-dimension tensor representing fake/real.
         Parameters:
         image: a flattened image tensor with dimension (im_dim)
         '''
-        disc_pred = self.disc(torch.cat((frame_1, frame_3), dim=1))
+        disc_pred = self.disc(image)
         encoding = disc_pred.view(len(disc_pred), -1)
         # The stddev output is treated as the log of the variance of the normal 
         # distribution by convention and for numerical stability
@@ -112,8 +110,6 @@ class Decoder(nn.Module):
         x = noise.view(len(noise), self.z_dim, 1, 1)
         return self.gen(x)
 
-
-# Full Model (Integrates Encoder and Decoder in a Variational Autoencoder (VAE))
 from torch.distributions.normal import Normal
 
 class VAE(nn.Module):
@@ -126,13 +122,13 @@ class VAE(nn.Module):
     hidden_dim: the inner dimension, a scalar
     '''
     
-    def __init__(self, z_dim=32, endpoint_frames=2, frame_channels=1, hidden_dim=64):
+    def __init__(self, z_dim=32, im_chan=1, hidden_dim=64):
         super(VAE, self).__init__()
         self.z_dim = z_dim
-        self.encode = Encoder(endpoint_frames, z_dim)
-        self.decode = Decoder(z_dim, frame_channels)
+        self.encode = Encoder(im_chan, z_dim)
+        self.decode = Decoder(z_dim, im_chan)
 
-    def forward(self, frames_1, frames_3):
+    def forward(self, images):
         '''
         Function for completing a forward pass of the Decoder: Given a noise vector, 
         returns a generated image.
@@ -142,24 +138,23 @@ class VAE(nn.Module):
         decoding: the autoencoded image
         q_dist: the z-distribution of the encoding
         '''
-        q_mean, q_stddev = self.encode(frames_1, frames_3)
+        q_mean, q_stddev = self.encode(images)
         q_dist = Normal(q_mean, q_stddev)
         z_sample = q_dist.rsample() # Sample once from each distribution, using the `rsample` notation
         decoding = self.decode(z_sample)
         return decoding, q_dist
 
-
-# Losses
+# %%
 reconstruction_loss = nn.BCELoss(reduction='sum')
 
+# %%
 from torch.distributions.kl import kl_divergence
 def kl_divergence_loss(q_dist):
     return kl_divergence(
         q_dist, Normal(torch.zeros_like(q_dist.mean), torch.ones_like(q_dist.stddev))
     ).sum(-1)
 
-
-# Pre-Processing
+# %%
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -211,6 +206,7 @@ class MyDataset(Dataset):
             triplet.append(img)
         return triplet[0], triplet[1], triplet[2]
 
+# %%
 from torch.utils.data.dataloader import DataLoader
 from torchvision import datasets, transforms
 import os
@@ -223,7 +219,7 @@ transform=transforms.Compose([
 my_dataset = MyDataset(triplet_paths, transform=transform, binarize_at=0.75, resize_to=(94, 94))
 train_dataloader = DataLoader(my_dataset, batch_size=2048, shuffle=True)
 
-
+# %%
 import matplotlib.pyplot as plt
 plt.rcParams["figure.figsize"] = (16, 8)
 
@@ -241,47 +237,42 @@ def show_tensor_images(image_tensor, num_images=25, size=(1, 28, 28)):
     plt.axis('off')
     plt.imshow(image_grid.permute(1, 2, 0).squeeze())
 
-losses = []
-device = 'cuda:1'
-vae = VAE().to(device)
-vae_opt = torch.optim.Adam(vae.parameters(), lr=0.002)
-for epoch in range(500):
-    print(f"Epoch {epoch}")
-    time.sleep(0.5)
-    epoch_loss = 0
-    for frames_1, frames_2, frames_3 in tqdm(train_dataloader):
-        frames_1, frames_2, frames_3 = frames_1.to(device), frames_2.to(device), frames_3.to(device)
-        vae_opt.zero_grad() # Clear out the gradients
-        recon_images, encoding = vae(frames_1, frames_3)
-        print(recon_images.shape, frames_2.shape)
-        loss = reconstruction_loss(recon_images, frames_2) + kl_divergence_loss(encoding).sum()
-        loss.backward()
-        vae_opt.step()
-        epoch_loss += loss.item()
-    losses.append(epoch_loss)
+if __name__ == '__main__':
+    losses = []
+    device = 'cuda'
+    vae = VAE().to(device)
+    vae_opt = torch.optim.Adam(vae.parameters(), lr=0.002)
+    for epoch in range(500):
+        print(f"Epoch {epoch}")
+        time.sleep(0.5)
+        epoch_loss = 0
+        for images, _, __ in tqdm(train_dataloader):
+            images = images.to(device)
+            vae_opt.zero_grad() # Clear out the gradients
+            recon_images, encoding = vae(images)
+            loss = reconstruction_loss(recon_images, images) + kl_divergence_loss(encoding).sum()
+            loss.backward()
+            vae_opt.step()
+            epoch_loss += loss.item()
+        losses.append(epoch_loss)
 
-    # Plot the list of losses
-    plt.plot(losses)
-    plt.title("Loss per Epoch")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.show()
-    
-    plt.subplot(1,2,1)
-    show_tensor_images(frames_2)
-    plt.title("True")
-    plt.subplot(1,2,2)
-    show_tensor_images(recon_images)
-    plt.title("Reconstructed")
-    plt.show()
+        # Plot the list of losses
+        if epoch % 10 == 0:
+            path = 'VAEInterpolator/graphs/'
+            plt.plot(losses)
+            plt.title("Loss per Epoch")
+            plt.xlabel("Epoch")
+            plt.ylabel("Loss")
+            plt.savefig(path + 'loss' + str(epoch) + '.png')
+        
+            plt.subplot(1,2,1)
+            show_tensor_images(images)
+            plt.title("True")
+            plt.subplot(1,2,2)
+            show_tensor_images(recon_images)
+            plt.title("Reconstructed")
+            plt.savefig(path + 'recon' + str(epoch) + '.png')
 
 
-import cv2
-import matplotlib.pyplot as plt
 
-img = cv2.imread('frame2.jpg', cv2.IMREAD_GRAYSCALE)
-print(img.shape)
-img = pre_process(img, binarize_at=0.75, resize_to=(94,94))
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-plt.imshow(img)
-plt.axis('off')
+

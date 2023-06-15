@@ -253,7 +253,6 @@ for epoch in range(500):
         frames_1, frames_2, frames_3 = frames_1.to(device), frames_2.to(device), frames_3.to(device)
         vae_opt.zero_grad() # Clear out the gradients
         recon_images, encoding = vae(frames_1, frames_3)
-        print(recon_images.shape, frames_2.shape)
         loss = reconstruction_loss(recon_images, frames_2) + kl_divergence_loss(encoding).sum()
         loss.backward()
         vae_opt.step()
@@ -262,7 +261,7 @@ for epoch in range(500):
 
     # Plot the list of losses
     if epoch % 10 == 0:
-        path = 'VAEInterpolator/graphs/'
+        path = 'graphs/'
         plt.plot(losses)
         plt.title("Loss per Epoch")
         plt.xlabel("Epoch")

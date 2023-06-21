@@ -262,12 +262,14 @@ for epoch in range(500):
     # Plot the list of losses
     if epoch % 10 == 0:
         path = 'graphs/'
+        plt.figure()
         plt.plot(losses)
         plt.title("Loss per Epoch")
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
         plt.savefig(path + 'loss' + str(epoch) + '.png')
-    
+        
+        plt.figure() # Create a new figure for the subplots
         plt.subplot(1,2,1)
         show_tensor_images(frames_2)
         plt.title("True")

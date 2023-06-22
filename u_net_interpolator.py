@@ -272,11 +272,11 @@ binarize = 0.75
 
 # Training parameters
 criterion = nn.BCEWithLogitsLoss()
-n_epochs = 200
+n_epochs = 100
 input_dim = 2
 label_dim = 1
-display_step = 20
-batch_size = 4
+display_step = 10
+batch_size = 16
 lr = 0.0002
 initial_shape = 512
 target_shape = 373
@@ -295,8 +295,6 @@ def train():
     for epoch in range(n_epochs):
         epoch_loss = 0
         for input1, labels, input2 in tqdm(dataloader):
-            cur_batch_size = len(input1)
-
             # Flatten the image
             input1, labels, input2 = input1.to(device), labels.to(device), input2.to(device)
 
@@ -307,25 +305,29 @@ def train():
             unet_opt.step()
             epoch_loss += unet_loss.item()
             losses.append(epoch_loss)
+            cur_step += 1
        
             # Plot the list of losses
-            if epoch % display_step == 0:
-                # print(f"Epoch {epoch}: Step {cur_step}: U-Net loss: {unet_loss.item()}")
-                path = 'graphs/'
-                plt.figure()
-                plt.plot(losses)
-                plt.title("Loss per Epoch")
-                plt.xlabel("Epoch")
-                plt.ylabel("Loss")
-                plt.savefig(path + 'loss' + str(epoch) + '.png')
-                
-                plt.figure() # Create a new figure for the subplots
-                plt.subplot(1,2,1)
-                show_tensor_images(labels)
-                plt.title("True")
-                plt.subplot(1,2,2)
-                show_tensor_images(pred)
-                plt.title("Reconstructed")
-                plt.savefig(path + 'recon' + str(epoch) + '.png')
-            cur_step += 1
+        if epoch % display_step == 0:
+            print(f"Epoch {epoch}: Step {cur_step}: U-Net loss: {unet_loss.item()}")
+            path = 'graphs/'
+            plt.figure()
+            plt.plot(losses)
+            plt.title("Loss per Epoch")
+            plt.xlabel("Epoch")
+            plt.ylabel("Loss")
+            plt.savefig(path + 'loss' + str(epoch) + '.png')
+            
+            plt.figure() # Create a new figure for the subplots
+            plt.subplot(1,2,1)
+            show_tensor_images(labels)
+            plt.title("True")
+            plt.subplot(1,2,2)
+            show_tensor_images(pred)
+            plt.title("Reconstructed")
+            plt.savefig(path + 'recon' + str(epoch) + '.png')
+        
+    torch.save(unet.state_dict(), 'baseline_unet_int.pth')
+        
+        
 train()

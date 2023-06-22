@@ -247,7 +247,6 @@ vae = VAE().to(device)
 vae_opt = torch.optim.Adam(vae.parameters(), lr=0.002)
 for epoch in range(500):
     print(f"Epoch {epoch}")
-    time.sleep(0.5)
     epoch_loss = 0
     for frames_1, frames_2, frames_3 in tqdm(train_dataloader):
         frames_1, frames_2, frames_3 = frames_1.to(device), frames_2.to(device), frames_3.to(device)

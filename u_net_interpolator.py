@@ -304,8 +304,9 @@ def train():
             unet_loss.backward()
             unet_opt.step()
             epoch_loss += unet_loss.item()
-            losses.append(epoch_loss)
             cur_step += 1
+
+        losses.append(epoch_loss)
        
             # Plot the list of losses
         if epoch % display_step == 0:
@@ -324,10 +325,10 @@ def train():
             plt.title("True")
             plt.subplot(1,2,2)
             show_tensor_images(pred)
-            plt.title("Reconstructed")
+            plt.title("Generated")
             plt.savefig(path + 'recon' + str(epoch) + '.png')
-        
-    torch.save(unet.state_dict(), 'baseline_unet_int.pth')
+            # Save checkpoints
+            torch.save(unet.state_dict(), 'checkpoints/unet/baseline_unet_' + str(epoch) + '.pth')
         
         
 train()

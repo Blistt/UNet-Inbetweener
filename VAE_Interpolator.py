@@ -238,8 +238,8 @@ def show_tensor_images(image_tensor, num_images=25, size=(1, 28, 28)):
     '''
     image_unflat = image_tensor.detach().cpu()
     image_grid = make_grid(image_unflat[:num_images], nrow=5)
-    plt.axis('off')
     plt.imshow(image_grid.permute(1, 2, 0).squeeze())
+    plt.axis('off')
 
 losses = []
 device = 'cuda:1'
@@ -274,5 +274,5 @@ for epoch in range(500):
         plt.title("True")
         plt.subplot(1,2,2)
         show_tensor_images(recon_images)
-        plt.title("Reconstructed")
+        plt.title("Generated")
         plt.savefig(path + 'recon' + str(epoch) + '.png')

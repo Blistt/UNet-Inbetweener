@@ -230,12 +230,11 @@ import os
 import cv2
 
 class MyDataset(Dataset):
-    def __init__(self, data, transform=None, binarize_at=0.0, resize_to=(94,94), normalize=False, crop_shape=(0,0)):
+    def __init__(self, data, transform=None, binarize_at=0.0, resize_to=(94,94), crop_shape=(0,0)):
         self.data = data
         self.transform = transform
         self.binarize_at = binarize_at
         self.resize_to = resize_to
-        self.normalize = normalize
         self.crop_shape = crop_shape
 
     def __len__(self):
@@ -251,8 +250,6 @@ class MyDataset(Dataset):
                 img = pre_process(img, binarize_at=self.binarize_at, resize_to=self.resize_to)
             if self.transform:
                 img = self.transform(img)
-            if self.normalize:
-                img = img / 255
             triplet.append(img)
         if self.crop_shape != (0,0):
             triplet[1] = crop(triplet[1], self.crop_shape)

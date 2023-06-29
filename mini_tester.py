@@ -7,7 +7,9 @@ import tqdm
 from utils import show_tensor_images
 import torch
 
-# Test In-between generation in the miniset
+'''
+ Test In-between generation in the miniset
+ '''
 def test(dataset, model, results_path, batch_size=1):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     batch_count = 0
@@ -28,7 +30,7 @@ def test(dataset, model, results_path, batch_size=1):
 if __name__ == '__main__':
     # Dataset specifications
     device = 'cuda'
-    data_dir = 'mini_test_triplets_2/'
+    data_dir = 'mini_datasets/mini_test_triplets/'
     input_dim = 2
     label_dim = 1
     results_path = 'results/'
@@ -44,7 +46,7 @@ if __name__ == '__main__':
 
     # Model parameters
     model = unet_int.UNet(input_dim, label_dim).to(device)
-    checkpoint = 'checkpoints/unet/baseline_unet_0.pth'
+    checkpoint = 'baseline_unet_int.pth'
 
     # Load saved weights
     weights = torch.load(checkpoint)

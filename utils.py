@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 import os
 from torchvision import transforms
+import imageio
 
 
 """Supporting functions"""
@@ -58,6 +59,8 @@ def pre_process(img, binarize_at=0.0, resize_to=(0,0)):
 
     return img
 
+def create_gif(triplet, filename):
+    imageio.mimsave(filename+'.gif', triplet, duration=0.5)
 
 # """Read Minidataset"""
 # def read_minidataset(data_dir, transform=True, pre_process=False, crop_shape=(0,0)):

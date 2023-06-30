@@ -28,14 +28,18 @@ def test(dataset, model, results_path, batch_size=1):
         batch_count += 1
 
 if __name__ == '__main__':
-    # Dataset specifications
+    '''
+    Dataset specifications
+    '''
     device = 'cuda'
     data_dir = 'mini_datasets/mini_test_triplets/'
     input_dim = 2
     label_dim = 1
     results_path = 'results/'
 
-    # Input parameters
+    '''
+    Input parameters
+    '''
     initial_shape = (512, 512)
     target_shape = (373, 373)
     binary_threshold = 0.75
@@ -44,7 +48,9 @@ if __name__ == '__main__':
 
     dataset = MyDataset(data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold, crop_shape=target_shape)
 
-    # Model parameters
+    '''
+    Model parameters
+    '''
     model = unet_int.UNet(input_dim, label_dim).to(device)
     checkpoint = 'baseline_unet_int.pth'
 

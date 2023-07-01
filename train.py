@@ -34,7 +34,7 @@ def train(dataset, model, model_opt, criterion, n_epochs=10, batch_size=10, devi
         losses.append(epoch_loss)
 
         '''
-        Saves checkpoints, visualizes predictions and plots sosses
+        Saves checkpoints, visualizes predictions and plots losses
         '''
         if epoch % display_step == 0:
 
@@ -47,7 +47,36 @@ def train(dataset, model, model_opt, criterion, n_epochs=10, batch_size=10, devi
             # Saves checkpoing with model's current state
             torch.save(model.state_dict(), experiment_dir + 'checkpoint' + str(epoch) + '.pth')
 
+# def test(dataset, model, criterion, batch_size=10, device='cuda', experiment_dir='exp/', display_step=10):
+#     '''
+#     Testing loop
+#     '''
+#     cur_step = 0
+#     losses = []
+#     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
+#     for input1, labels, input2 in tqdm.tqdm(dataloader):
+#         # Flatten the image
+#         input1, labels, input2 = input1.to(device), labels.to(device), input2.to(device)
+
+#         pred = model(input1, input2)
+#         model_loss = criterion(pred, labels)
+#         losses.append(model_loss.item())
+#         cur_step += 1
+
+#         '''
+#         Saves checkpoints, visualizes predictions and plots losses
+#         '''
+#         if cur_step % display_step == 0:
+
+#             # Saves snapshot of model's architecture
+#             print(f"Step {cur_step}: Model loss: {model_loss.item()}")
+
+#             # Visualizes predictions and ground truth
+#             visualize_batch(input1, labels, input2, pred, model, losses, cur_step, experiment_dir, train_test='testing')
+
+#             # Saves checkpoing with model's current state
+#             torch.save(model.state_dict(), experiment_dir + 'checkpoint' + str(cur_step) + '.pth'
 
 
 if __name__ == '__main__':

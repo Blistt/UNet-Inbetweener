@@ -75,7 +75,7 @@ if __name__ == '__main__':
     lr = 0.0002
     opt = torch.optim.Adam(model.parameters(), lr=lr)
     batch_size = 16
-    num_epochs = 500
+    num_epochs = 3000
 
 
     '''

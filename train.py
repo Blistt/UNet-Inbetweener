@@ -56,7 +56,6 @@ if __name__ == '__main__':
     '''
     device = 'cuda:1'
     data_dir = '/data/farriaga/atd_12k/Line_Art/train_10k'
-    # data_dir = 'mini_datasets/mini_train_triplets/'
     input_dim = 2
     label_dim = 1
     initial_shape = (512, 512)

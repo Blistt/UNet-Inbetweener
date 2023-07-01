@@ -2,6 +2,8 @@ from torch.utils.data import Dataset
 import os
 import cv2
 from utils import crop, pre_process
+from matplotlib import pyplot as plt
+import numpy as np
 
 class MyDataset(Dataset):
     def __init__(self, data_dir, transform=None, binarize_at=0.0, resize_to=(0,0), crop_shape=(0,0)):
@@ -25,6 +27,12 @@ class MyDataset(Dataset):
             if self.transform:
                 img = self.transform(img)
             triplet.append(img)
+
+        input1 = triplet[2]
+        label = triplet[0]
+        input2 = triplet[1]
+
         if self.crop_shape != (0,0):
-            triplet[1] = crop(triplet[1], self.crop_shape)
-        return triplet[0], triplet[1], triplet[2]
+            label = crop(label, self.crop_shape)
+
+        return input1, label, input2

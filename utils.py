@@ -53,7 +53,7 @@ def show_tensor_images(image_tensor, num_images=16, size=(1, 28, 28)):
     plt.axis('off')
     plt.imshow(image_grid.permute(1, 2, 0).squeeze())
 
-def create_gif(input1, input2, pred, labels, experiment_dir, epoch):
+def create_gif(input1, labels, input2, pred, experiment_dir, epoch):
     input1, input2 = crop(input1[0], pred.shape), crop(input2[0], pred.shape)
     pred = Image.fromarray(np.squeeze((pred[0].detach().cpu().numpy() * 255), axis=0))
     input1 = Image.fromarray(np.squeeze((input1.detach().cpu().numpy() * 255), axis=0))
@@ -64,36 +64,51 @@ def create_gif(input1, input2, pred, labels, experiment_dir, epoch):
     # Gif for ground truth triplet
     input1.save(experiment_dir + 'triplet_pred' + str(epoch) + '.gif', save_all=True, append_images=[pred, input2], duration=500, loop=0)
 
-def visualize_batch(input1, labels, input2, pred, model, epoch, experiment_dir, training_losses, testing_losses=None, train_test='training', figsize=(20,10)):
+def visualize_batch(input1, labels, input2, pred, model, epoch, experiment_dir, train_losses=None, test_losses=None, train_test='training', figsize=(20,10)):
         # Creates experiment directory if it doesn't exist
         experiment_dir = experiment_dir + train_test + '/'
         if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 
-        if epoch == 0:
-            # Save snapshot of model architecture
-            with open(experiment_dir + 'model_architecture.txt', 'w') as f:
-                print(model, file=f)
 
-        # Plots losses
-        plt.figure()
-        plt.plot(losses)
-        plt.title("Loss per Epoch")
-        plt.xlabel("Epoch")
-        plt.ylabel("Loss")
-        plt.savefig(experiment_dir + 'loss' + str(epoch) + '.png')
+        if train_losses is not None and test_losses is not None:
+            # Plots training and testing losses in the same plot
+            plt.figure()
+            plt.plot(train_losses, label='Training')
+            plt.plot(test_losses, label='Testing')
+            plt.title("Loss per Epoch")
+            plt.xlabel("Epoch")
+            plt.ylabel("Loss")
+            plt.legend()
+            plt.savefig(experiment_dir + 'loss' + str(epoch) + '.png')
+
+            # Plots generated images
+            plt.figure(figsize=figsize) # Create a new figure for the subplots
+            plt.subplot(1,2,1)
+            show_tensor_images(labels)
+            plt.title("True")
+            plt.subplot(1,2,2)
+            show_tensor_images(pred)
+            plt.title("Generated")
+            plt.savefig(experiment_dir + 'gens' + str(epoch) + '.png')
+
+            # Saves gifs of the predicted and ground truth triplets
+            create_gif(input1, labels, input2, pred, experiment_dir, epoch)
         
-        # Plots generated images
-        plt.figure(figsize=figsize) # Create a new figure for the subplots
-        plt.subplot(1,2,1)
-        show_tensor_images(labels)
-        plt.title("True")
-        plt.subplot(1,2,2)
-        show_tensor_images(pred)
-        plt.title("Generated")
-        plt.savefig(experiment_dir + 'gens' + str(epoch) + '.png')
+        if train_losses is None and test_losses is not None:
+            # Plots generated images
+            plt.figure(figsize=figsize) # Create a new figure for the subplots
+            plt.subplot(1,2,1)
+            show_tensor_images(labels)
+            plt.title("True")
+            plt.subplot(1,2,2)
+            show_tensor_images(pred)
+            plt.title("Generated")
+            plt.savefig(experiment_dir + 'gens' + str(epoch) + '.png')
 
-        # Saves gifs of the predicted and ground truth triplets
-        create_gif(input1, input2, pred, labels, experiment_dir, epoch)
+            # Saves gifs of the predicted and ground truth triplets
+            create_gif(input1, input2, pred, labels, experiment_dir, epoch)
+        
+
 
 
 

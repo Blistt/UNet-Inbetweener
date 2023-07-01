@@ -17,19 +17,21 @@ def train(dataset, model, model_opt, criterion, n_epochs=10, batch_size=10, devi
     losses = []
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
+    input1, labels, input2 = next(iter(dataloader))
+
     for epoch in range(n_epochs):
         epoch_loss = 0
-        for input1, labels, input2 in tqdm.tqdm(dataloader):
-            # Flatten the image
-            input1, labels, input2 = input1.to(device), labels.to(device), input2.to(device)
+    # for input1, labels, input2 in tqdm.tqdm(dataloader):
+        # Flatten the image
+        input1, labels, input2 = input1.to(device), labels.to(device), input2.to(device)
 
-            model_opt.zero_grad()
-            pred = model(input1, input2)
-            model_loss = criterion(pred, labels)
-            model_loss.backward()
-            model_opt.step()
-            epoch_loss += model_loss.item()
-            cur_step += 1
+        model_opt.zero_grad()
+        pred = model(input1, input2)
+        model_loss = criterion(pred, labels)
+        model_loss.backward()
+        model_opt.step()
+        epoch_loss += model_loss.item()
+        cur_step += 1
 
         losses.append(epoch_loss)
 
@@ -73,14 +75,14 @@ if __name__ == '__main__':
     lr = 0.0002
     opt = torch.optim.Adam(model.parameters(), lr=lr)
     batch_size = 16
-    num_epochs = 100
+    num_epochs = 500
 
 
     '''
     Visualization parameters
     '''
-    display_step = 1
-    experiment_dir = 'exp0/'
+    display_step = 10
+    experiment_dir = 'exp_overfit/'
     if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 
     train(dataset, model, opt, loss, n_epochs=num_epochs, batch_size=batch_size, device=device, experiment_dir=experiment_dir, display_step=display_step)

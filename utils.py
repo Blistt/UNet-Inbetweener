@@ -55,16 +55,16 @@ def show_tensor_images(image_tensor, num_images=16, size=(1, 28, 28)):
 
 def create_gif(input1, input2, pred, labels, experiment_dir, epoch):
     input1, input2 = crop(input1[0], pred.shape), crop(input2[0], pred.shape)
-    pred = Image.fromarray(np.squeeze((pred[0].detach().cpu().numpy() * 255).astype(np.uint8), axis=0))
-    input1 = Image.fromarray(np.squeeze((input1.detach().cpu().numpy() * 255).astype(np.uint8), axis=0))
-    input2 = Image.fromarray(np.squeeze((input2.detach().cpu().numpy() * 255).astype(np.uint8), axis=0))
-    labels = Image.fromarray(np.squeeze((labels[0].detach().cpu().numpy() * 255).astype(np.uint8), axis=0))
+    pred = Image.fromarray(np.squeeze((pred[0].detach().cpu().numpy() * 255), axis=0))
+    input1 = Image.fromarray(np.squeeze((input1.detach().cpu().numpy() * 255), axis=0))
+    input2 = Image.fromarray(np.squeeze((input2.detach().cpu().numpy() * 255), axis=0))
+    labels = Image.fromarray(np.squeeze((labels[0].detach().cpu().numpy() * 255), axis=0))
     # Gif for generated triplet
-    input1.save(experiment_dir + 'triplet_true' + str(epoch) + '.gif', save_all=True, append_images=[pred, input2], duration=500, loop=0)
+    input1.save(experiment_dir + 'triplet_true' + str(epoch) + '.gif', save_all=True, append_images=[labels, input2], duration=500, loop=0)
     # Gif for ground truth triplet
-    input2.save(experiment_dir + 'triplet_pred' + str(epoch) + '.gif', save_all=True, append_images=[labels, input1], duration=500, loop=0)
+    input1.save(experiment_dir + 'triplet_pred' + str(epoch) + '.gif', save_all=True, append_images=[pred, input2], duration=500, loop=0)
 
-def visualize_batch(input1, labels, input2, pred, model, losses, epoch, experiment_dir, train_test='training'):
+def visualize_batch(input1, labels, input2, pred, model, losses, epoch, experiment_dir, train_test='training', figsize=(20,10)):
         # Creates experiment directory if it doesn't exist
         experiment_dir = experiment_dir + train_test + '/'
         if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
@@ -83,7 +83,7 @@ def visualize_batch(input1, labels, input2, pred, model, losses, epoch, experime
         plt.savefig(experiment_dir + 'loss' + str(epoch) + '.png')
         
         # Plots generated images
-        # plt.figure() # Create a new figure for the subplots
+        plt.figure(figsize=figsize) # Create a new figure for the subplots
         plt.subplot(1,2,1)
         show_tensor_images(labels)
         plt.title("True")

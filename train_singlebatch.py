@@ -75,14 +75,14 @@ if __name__ == '__main__':
     lr = 0.0002
     opt = torch.optim.Adam(model.parameters(), lr=lr)
     batch_size = 16
-    num_epochs = 3000
+    num_epochs = 30
 
 
     '''
     Visualization parameters
     '''
     display_step = 10
-    experiment_dir = 'exp_overfit/'
+    experiment_dir = 'exp_overfit2/'
     if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 
     train(dataset, model, opt, loss, n_epochs=num_epochs, batch_size=batch_size, device=device, experiment_dir=experiment_dir, display_step=display_step)

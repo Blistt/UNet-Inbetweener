@@ -64,7 +64,7 @@ def create_gif(input1, input2, pred, labels, experiment_dir, epoch):
     # Gif for ground truth triplet
     input1.save(experiment_dir + 'triplet_pred' + str(epoch) + '.gif', save_all=True, append_images=[pred, input2], duration=500, loop=0)
 
-def visualize_batch(input1, labels, input2, pred, model, losses, epoch, experiment_dir, train_test='training', figsize=(20,10)):
+def visualize_batch(input1, labels, input2, pred, model, epoch, experiment_dir, training_losses, testing_losses=None, train_test='training', figsize=(20,10)):
         # Creates experiment directory if it doesn't exist
         experiment_dir = experiment_dir + train_test + '/'
         if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)

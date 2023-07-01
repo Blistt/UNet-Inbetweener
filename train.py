@@ -9,13 +9,14 @@ from utils import visualize_batch
 import os
 from torch import nn
 
-def train(dataset, model, model_opt, criterion, n_epochs=10, batch_size=10, device='cuda', experiment_dir='exp/', display_step=10):
+def train(tra_dataset, model, model_opt, criterion, test_dataset=None, n_epochs=10, batch_size=10, device='cuda', experiment_dir='exp/', display_step=10):
     '''
     Training loop
     '''
     cur_step = 0
-    losses = []
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    tr_losses = []
+    test_losses = []
+    dataloader = DataLoader(tra_dataset, batch_size=batch_size, shuffle=True)
 
     for epoch in range(n_epochs):
         epoch_loss = 0
@@ -31,52 +32,55 @@ def train(dataset, model, model_opt, criterion, n_epochs=10, batch_size=10, devi
             epoch_loss += model_loss.item()
             cur_step += 1
 
-        losses.append(epoch_loss)
+        tr_losses.append(epoch_loss)
 
         '''
         Saves checkpoints, visualizes predictions and plots losses
         '''
         if epoch % display_step == 0:
 
-            # Saves snapshot of model's architecture
-            print(f"Epoch {epoch}: Step {cur_step}: Model loss: {model_loss.item()}")
+            if epoch == 0:
+                # Save snapshot of model architecture
+                with open(experiment_dir + 'model_architecture.txt', 'w') as f:
+                    print(model, file=f)
 
+            if test_dataset is not None:
+                test_losses.append(test(test_dataset, model, criterion, epoch, batch_size=batch_size, device=device, experiment_dir=experiment_dir, display_step=display_step))
+                
+
+            print(f"Epoch {epoch}: Step {cur_step}: Training loss: {model_loss.item()} Testing loss: {test_losses[-1]}")
             # Visualizes predictions and ground truth
-            visualize_batch(input1, labels, input2, pred, model, losses, epoch, experiment_dir, train_test='training')
+            visualize_batch(input1, labels, input2, pred, model, epoch, experiment_dir, train_losses=tr_losses, test_losses=test_losses, train_test='training')
 
             # Saves checkpoing with model's current state
             torch.save(model.state_dict(), experiment_dir + 'checkpoint' + str(epoch) + '.pth')
 
-# def test(dataset, model, criterion, batch_size=10, device='cuda', experiment_dir='exp/', display_step=10):
-#     '''
-#     Testing loop
-#     '''
-#     cur_step = 0
-#     losses = []
-#     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+def test(dataset, model, criterion, epoch, batch_size=10, device='cuda', experiment_dir='exp/', display_step=10):
+    '''
+    Testing loop
+    '''
+    cur_step = 0
+    losses = []
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
-#     for input1, labels, input2 in tqdm.tqdm(dataloader):
-#         # Flatten the image
-#         input1, labels, input2 = input1.to(device), labels.to(device), input2.to(device)
+    for input1, labels, input2 in tqdm.tqdm(dataloader):
+        # Flatten the image
+        input1, labels, input2 = input1.to(device), labels.to(device), input2.to(device)
 
-#         pred = model(input1, input2)
-#         model_loss = criterion(pred, labels)
-#         losses.append(model_loss.item())
-#         cur_step += 1
+        pred = model(input1, input2)
+        model_loss = criterion(pred, labels)
+        losses.append(model_loss.item())
+        cur_step += 1
 
-#         '''
-#         Saves checkpoints, visualizes predictions and plots losses
-#         '''
-#         if cur_step % display_step == 0:
-
-#             # Saves snapshot of model's architecture
-#             print(f"Step {cur_step}: Model loss: {model_loss.item()}")
-
-#             # Visualizes predictions and ground truth
-#             visualize_batch(input1, labels, input2, pred, model, losses, cur_step, experiment_dir, train_test='testing')
-
-#             # Saves checkpoing with model's current state
-#             torch.save(model.state_dict(), experiment_dir + 'checkpoint' + str(cur_step) + '.pth'
+        '''
+        Saves checkpoints, visualizes predictions and plots losses
+        '''
+        if cur_step % display_step == 0:
+            # Visualizes predictions and ground truth
+            visualize_batch(input1, labels, input2, pred, model, epoch, experiment_dir, test_losses=losses, train_test='testing')
+        
+        # Returns average loss
+        return sum(losses)/len(losses)
 
 
 if __name__ == '__main__':
@@ -84,14 +88,16 @@ if __name__ == '__main__':
     Dataset parameters
     '''
     device = 'cuda:1'
-    data_dir = '/data/farriaga/atd_12k/Line_Art/train_10k'
+    train_data_dir = '/data/farriaga/atd_12k/Line_Art/train_10k'
     input_dim = 2
     label_dim = 1
     initial_shape = (512, 512)
     target_shape = (373, 373)
     binary_threshold = 0.75
     transform=transforms.Compose([transforms.ToTensor(),])
-    dataset = MyDataset(data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold, crop_shape=target_shape)
+    train_dataset = MyDataset(train_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold, crop_shape=target_shape)
+    test_data_dir = 'mini_datasets/mini_test_triplets'
+    test_dataset = MyDataset(test_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold, crop_shape=target_shape)
 
     '''
     Training parameters
@@ -108,8 +114,8 @@ if __name__ == '__main__':
     Visualization parameters
     '''
     display_step = 1
-    experiment_dir = 'exp0/'
+    experiment_dir = 'exp1/'
     if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 
-    train(dataset, model, opt, loss, n_epochs=num_epochs, batch_size=batch_size, device=device, experiment_dir=experiment_dir, display_step=display_step)
+    train(train_dataset, model, opt, loss, test_dataset=test_dataset, n_epochs=num_epochs, batch_size=batch_size, device=device, experiment_dir=experiment_dir, display_step=display_step)
 

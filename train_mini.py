@@ -32,7 +32,7 @@ def train(tra_dataset, model, model_opt, criterion, test_dataset=None, n_epochs=
             epoch_loss += model_loss.item()
             cur_step += 1
 
-        tr_losses.append(epoch_loss)
+        tr_losses.append(epoch_loss/len(epoch_loss))
 
         '''
         Saves checkpoints, visualizes predictions and plots losses
@@ -60,7 +60,7 @@ def test(dataset, model, criterion, epoch, batch_size=8, device='cuda:1', experi
     Testing loop
     '''
     cur_step = 0
-    losses = []
+    test_losses = []
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
     for input1, labels, input2 in tqdm.tqdm(dataloader):
@@ -69,7 +69,7 @@ def test(dataset, model, criterion, epoch, batch_size=8, device='cuda:1', experi
 
         pred = model(input1, input2)
         model_loss = criterion(pred, labels)
-        model_loss += model_loss.item()
+        epoch_loss += model_loss.item()
         cur_step += 1
 
         '''
@@ -79,8 +79,10 @@ def test(dataset, model, criterion, epoch, batch_size=8, device='cuda:1', experi
             # Visualizes predictions and ground truth
             visualize_batch(input1, labels, input2, pred, epoch, experiment_dir=experiment_dir, test_losses=losses, train_test='testing')
         
+        
+        
         # Returns average loss
-    return model_loss
+    return epoch_loss/len(epoch_loss)
 
 
 if __name__ == '__main__':

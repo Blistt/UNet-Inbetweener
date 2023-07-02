@@ -41,10 +41,15 @@ def train(dataset, model, model_opt, criterion, n_epochs=10, batch_size=10, devi
         if epoch % display_step == 0:
 
             # Saves snapshot of model's architecture
+            if epoch == 0:
+                with open(experiment_dir + 'model_architecture.txt', 'w') as f:
+                    print(model, file=f)
+
+
             print(f"Epoch {epoch}: Step {cur_step}: Model loss: {model_loss.item()}")
 
             # Visualizes predictions and ground truth
-            visualize_batch(input1, labels, input2, pred, model, losses, epoch, experiment_dir, train_test='training')
+            visualize_batch(input1, labels, input2, pred, epoch, experiment_dir=experiment_dir, train_losses=losses, train_test='training')
 
             # Saves checkpoing with model's current state
             torch.save(model.state_dict(), experiment_dir + 'checkpoint' + str(epoch) + '.pth')
@@ -75,7 +80,7 @@ if __name__ == '__main__':
     lr = 0.0002
     opt = torch.optim.Adam(model.parameters(), lr=lr)
     batch_size = 16
-    num_epochs = 30
+    num_epochs = 3000
 
 
     '''

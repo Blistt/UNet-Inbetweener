@@ -80,15 +80,15 @@ def test(dataset, model, criterion, epoch, batch_size=8, device='cuda:1', experi
             visualize_batch(input1, labels, input2, pred, epoch, experiment_dir=experiment_dir, test_losses=losses, train_test='testing')
         
         # Returns average loss
-    return model_loss.item()
+    return model_loss
 
 
 if __name__ == '__main__':
     '''
     Dataset parameters
     '''
-    device = 'cuda:1'
-    train_data_dir = '/data/farriaga/atd_12k/Line_Art/train_10k'
+    device = 'cuda:0'
+    train_data_dir = 'mini_datasets/mini_train_triplets/'
     input_dim = 2
     label_dim = 1
     initial_shape = (512, 512)
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     binary_threshold = 0.75
     transform=transforms.Compose([transforms.ToTensor(),])
     train_dataset = MyDataset(train_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold, crop_shape=target_shape)
-    test_data_dir = '/data/farriaga/atd_12k/Line_Art/test_2k_original'
+    test_data_dir = 'mini_datasets/mini_test_triplets/'
     test_dataset = MyDataset(test_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold, crop_shape=target_shape)
 
     '''
@@ -106,7 +106,7 @@ if __name__ == '__main__':
     loss = nn.BCEWithLogitsLoss()
     lr = 0.0002
     opt = torch.optim.Adam(model.parameters(), lr=lr)
-    batch_size = 8
+    batch_size = 2
     num_epochs = 100
 
 
@@ -114,7 +114,7 @@ if __name__ == '__main__':
     Visualization parameters
     '''
     display_step = 10
-    experiment_dir = 'exp1/'
+    experiment_dir = 'exp_overfit/'
     if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 
     train(train_dataset, model, opt, loss, test_dataset=test_dataset, n_epochs=num_epochs, batch_size=batch_size, device=device, experiment_dir=experiment_dir, display_step=display_step)

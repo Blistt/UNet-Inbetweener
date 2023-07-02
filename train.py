@@ -88,7 +88,8 @@ if __name__ == '__main__':
     Dataset parameters
     '''
     device = 'cuda:1'
-    train_data_dir = '/data/farriaga/atd_12k/Line_Art/train_10k'
+    # train_data_dir = '/data/farriaga/atd_12k/Line_Art/train_10k'
+    train_data_dir = 'mini_dataset/mini_train_triplets/'
     input_dim = 2
     label_dim = 1
     initial_shape = (512, 512)
@@ -96,7 +97,7 @@ if __name__ == '__main__':
     binary_threshold = 0.75
     transform=transforms.Compose([transforms.ToTensor(),])
     train_dataset = MyDataset(train_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold, crop_shape=target_shape)
-    test_data_dir = '/data/farriaga/atd_12k/Line_Art/test_2k_original'
+    test_data_dir = 'mini_test_triplets/'
     test_dataset = MyDataset(test_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold, crop_shape=target_shape)
 
     '''
@@ -114,7 +115,7 @@ if __name__ == '__main__':
     Visualization parameters
     '''
     display_step = 10
-    experiment_dir = 'exp1/'
+    experiment_dir = 'exp2/'
     if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 
     train(train_dataset, model, opt, loss, test_dataset=test_dataset, n_epochs=num_epochs, batch_size=batch_size, device=device, experiment_dir=experiment_dir, display_step=display_step)

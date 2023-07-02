@@ -76,9 +76,7 @@ def visualize_batch(input1, labels, input2, pred, epoch, experiment_dir='exp/', 
         if train_losses is not None and test_losses is not None:
             # Plots training and testing losses in the same plot
             plt.figure()
-            print('tain', len(train_losses))
-            plt.plot('test', train_losses, label='Training')
-            print('test', len(test_losses))
+            plt.plot(train_losses, label='Training')
             plt.plot(test_losses, label='Testing')
             plt.title("Loss per Epoch")
             plt.xlabel("Epoch")

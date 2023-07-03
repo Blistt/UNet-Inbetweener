@@ -63,21 +63,22 @@ def create_gif(input1, labels, input2, pred, experiment_dir, epoch):
     input2 = Image.fromarray(np.squeeze((input2.detach().cpu().numpy() * 255), axis=0))
     labels = Image.fromarray(np.squeeze((labels[0].detach().cpu().numpy() * 255), axis=0))
     # Gif for generated triplet
-    input1.save(experiment_dir + 'triplet_true' + str(epoch) + '.gif', save_all=True, append_images=[labels, input2], duration=500, loop=0)
+    input1.save(experiment_dir + 'triplet_' + str(epoch) + 'true_.gif', save_all=True, append_images=[labels, input2], duration=500, loop=0)
     # Gif for ground truth triplet
-    input1.save(experiment_dir + 'triplet_pred' + str(epoch) + '.gif', save_all=True, append_images=[pred, input2], duration=500, loop=0)
+    input1.save(experiment_dir + 'triplet_' + str(epoch) + 'pred_.gif', save_all=True, append_images=[pred, input2], duration=500, loop=0)
 
 
-def visualize_batch(input1, labels, input2, pred, epoch, experiment_dir='exp/', train_losses=None, test_losses=None, train_test='training', figsize=(20,10)):
+def visualize_batch(input1, labels, input2, pred, epoch, experiment_dir='exp/', train_losses=None, test_losses=None, my_losses=None, train_test='training', figsize=(20,10)):
         # Creates experiment directory if it doesn't exist
         experiment_dir = experiment_dir + train_test + '/'
         if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 
-        if train_losses is not None and test_losses is not None:
+        if train_losses is not None and test_losses is not None and my_losses is not None:
             # Plots training and testing losses in the same plot
             plt.figure()
             plt.plot(train_losses, label='Training')
             plt.plot(test_losses, label='Testing')
+            plt.plot(my_losses, label='My Loss')
             plt.title("Loss per Epoch")
             plt.xlabel("Epoch")
             plt.ylabel("Loss")
@@ -136,6 +137,7 @@ def visualize_batch(input1, labels, input2, pred, epoch, experiment_dir='exp/', 
 
             # Saves gifs of the predicted and ground truth triplets
             create_gif(input1, labels, input2, pred, experiment_dir, epoch)
+
         
 
 

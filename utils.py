@@ -68,17 +68,16 @@ def create_gif(input1, labels, input2, pred, experiment_dir, epoch):
     input1.save(experiment_dir + 'triplet_' + str(epoch) + 'pred_.gif', save_all=True, append_images=[pred, input2], duration=500, loop=0)
 
 
-def visualize_batch(input1, labels, input2, pred, epoch, experiment_dir='exp/', train_losses=None, test_losses=None, my_losses=None, train_test='training', figsize=(20,10)):
+def visualize_batch(input1, labels, input2, pred, epoch, experiment_dir='exp/', train_losses=None, test_losses=None, train_test='training', figsize=(20,10)):
         # Creates experiment directory if it doesn't exist
         experiment_dir = experiment_dir + train_test + '/'
         if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 
-        if train_losses is not None and test_losses is not None and my_losses is not None:
+        if train_losses is not None and test_losses is not None:
             # Plots training and testing losses in the same plot
             plt.figure()
             plt.plot(train_losses, label='Training')
             plt.plot(test_losses, label='Testing')
-            plt.plot(my_losses, label='My Loss')
             plt.title("Loss per Epoch")
             plt.xlabel("Epoch")
             plt.ylabel("Loss")
@@ -88,10 +87,10 @@ def visualize_batch(input1, labels, input2, pred, epoch, experiment_dir='exp/', 
             # Plots generated images
             plt.figure(figsize=figsize) # Create a new figure for the subplots
             plt.subplot(1,2,1)
-            show_tensor_images(labels)
+            show_tensor_images(labels, num_images=labels.shape[0])
             plt.title("True")
             plt.subplot(1,2,2)
-            show_tensor_images(pred)
+            show_tensor_images(pred, num_images=pred.shape[0])
             plt.title("Generated")
             plt.savefig(experiment_dir + 'gens' + str(epoch) + '.png')
 
@@ -137,7 +136,6 @@ def visualize_batch(input1, labels, input2, pred, epoch, experiment_dir='exp/', 
 
             # Saves gifs of the predicted and ground truth triplets
             create_gif(input1, labels, input2, pred, experiment_dir, epoch)
-
         
 
 

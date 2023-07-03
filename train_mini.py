@@ -55,7 +55,6 @@ def train(tra_dataset, model, model_opt, criterion, test_dataset=None, n_epochs=
                 with open(experiment_dir + 'model_architecture.txt', 'w') as f:
                     print(model, file=f)
 
-
             '''
             Performs testing in MY dataset if specified
             '''
@@ -118,7 +117,7 @@ if __name__ == '__main__':
 
     #My dataset
     my_test_data_dir = 'mini_datasets/mini_real_test_triplets/'
-    my_test_dataset = MyDataset(test_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold, crop_shape=target_shape)
+    my_test_dataset = MyDataset(my_test_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold, crop_shape=target_shape)
 
     '''
     Training parameters
@@ -127,14 +126,14 @@ if __name__ == '__main__':
     loss = nn.BCEWithLogitsLoss()
     lr = 0.0002
     opt = torch.optim.Adam(model.parameters(), lr=lr)
-    batch_size = 12
-    num_epochs = 100
+    batch_size = 16
+    num_epochs = 2000
 
 
     '''
     Visualization parameters
     '''
-    display_step = 3
+    display_step = 20
     experiment_dir = 'exp3_mini/'
     if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 

@@ -134,7 +134,7 @@ if __name__ == '__main__':
     '''
     Visualization parameters
     '''
-    display_step = 3
+    display_step = 10
     experiment_dir = 'exp3/'
     if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 

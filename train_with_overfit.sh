@@ -1,3 +1,3 @@
 #!/bin/bash
-python train_singlebatch.py
+python train_mini.py
 python train.py

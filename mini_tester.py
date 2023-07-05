@@ -4,13 +4,13 @@ import matplotlib.pyplot as plt
 from dataset_class import MyDataset
 import unet_int
 import tqdm
-from utils import show_tensor_images
+from utils import show_tensor_images, create_gif
 import torch
 
 '''
  Test In-between generation in the miniset
  '''
-def test(dataset, model, results_path, batch_size=1):
+def test(dataset, model, results_path, batch_size=1, exp_no=0):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     batch_count = 0
     for input1, reals, input2 in tqdm.tqdm(dataloader):
@@ -24,15 +24,19 @@ def test(dataset, model, results_path, batch_size=1):
         plt.subplot(1,2,2)
         show_tensor_images(preds, num_images=1, size=(1, 28, 28))
         plt.title("Generated")
-        plt.savefig(results_path + 'inter' + str(batch_count) + '.png')
+        plt.savefig(results_path + 'inter' + str(batch_count) + str(exp_no) + '.png')
         batch_count += 1
+        
+        
+        # Saves gifs of the predicted and ground truth triplets
+        create_gif(input1, reals, input2, preds, results_path, exp_no)
 
 if __name__ == '__main__':
     '''
     Dataset specifications
     '''
-    device = 'cuda'
-    data_dir = 'mini_datasets/mini_test_triplets/'
+    device = 'cuda:0'
+    data_dir = 'mini_datasets/single_triplet/'
     input_dim = 2
     label_dim = 1
     results_path = 'results/'
@@ -52,10 +56,10 @@ if __name__ == '__main__':
     Model parameters
     '''
     model = unet_int.UNet(input_dim, label_dim).to(device)
-    checkpoint = 'baseline_unet_int.pth'
+    checkpoint = 'Experiments/exp0/baselines_100epochs.pth'
 
     # Load saved weights
     weights = torch.load(checkpoint)
     model.load_state_dict(weights)
 
-    test(dataset, model, results_path, batch_size=batch_size)
+    test(dataset, model, results_path, batch_size=batch_size, exp_no=4)

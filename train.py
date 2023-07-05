@@ -20,6 +20,7 @@ def train(tra_dataset, model, model_opt, criterion, test_dataset=None, n_epochs=
 
     for epoch in range(n_epochs):
         print('Epoch: ' + str(epoch))
+        model.train()       # Set the model to training mode
         epoch_loss = 0
         for input1, labels, input2 in tqdm.tqdm(dataloader):
             # Flatten the image
@@ -159,8 +160,8 @@ if __name__ == '__main__':
     '''
     Visualization parameters
     '''
-    display_step = 10
-    experiment_dir = 'exp3/'
+    display_step = 1
+    experiment_dir = 'exp4/'
     if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 
     train(train_dataset, model, opt, loss, n_epochs=num_epochs, batch_size=batch_size, device=device,

@@ -9,17 +9,16 @@ import torchmetrics
 import my_metrics
 import chamfer_dist
 import numpy as np
-from utils import normalize
+from utils import visualize_batch_eval
 from torchvision.utils import save_image
+import os
 
-
-
-def evaluate(dataset, model, metrics, batch_size=8, device='cuda:1', experiment_dir='exp/', display_step=10, train_test='testing'):
-    '''
-    Evaluates dataset on the given set of metrics
-    '''
+'''
+Main Evaluation Function
+    Evaluates a dataset given a set of metrics, and a model with weights already loaded
+'''
+def evaluate(dataset, model, metrics, epoch, batch_size=8, display_step=10, device='cuda:1', experiment_dir='exp/', train_test='testing'):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-    input1, labels, input2 = 0, 0, 0
 
     results = defaultdict(list)
     for input1, labels, input2 in tqdm.tqdm(dataloader):
@@ -28,15 +27,49 @@ def evaluate(dataset, model, metrics, batch_size=8, device='cuda:1', experiment_
 
         with torch.no_grad():
             pred = model(input1, input2)
-            pred = torch.sigmoid(pred)
-            save_image(pred, 'pred_torchvision_raw.png', normalize=False)
-            save_image(pred, 'pred_torchvision.png', normalize=True)
-            raw_metrics = metrics(pred, labels)
+            pred = torch.sigmoid(pred)  # THIS IS SOMETHING TO PAY ATTENTION TO, IT MIGHT BE NEEDED EVERYWHERE ELSE OR REMOVED
+            
+            # Saves images of predictions and real images
+            if epoch % display_step == 0:
+                save_image(labels, experiment_dir + 'eval_' + str(epoch) + '_true.png', nrow=2, normalize=False)
+                save_image(pred, experiment_dir + 'eval_' + str(epoch) + '_preds.png', nrow=2, normalize=False)
+            
+            raw_metrics = metrics(pred, labels) # Computes metrics
         for k,v in raw_metrics.items():
             results[k].append(v.item())
     
-    # Returns the average of all metrics
+    # Returns the average over all batches in the epoch for each metric
     return {k: np.mean(results[k]) for k,v in results.items()}
+
+
+'''
+Evaluates over multiple checkpoints
+    Evaluates a model over the course of multiple checkpoints already stored as pth files
+'''
+def evaluate_multiple_checkpoints(dataset, model, metrics, checkpoints_dir, batch_size=8, device='cuda:1', experiment_dir='exp/', display_step=10, train_test='testing'):
+    
+    # Makes experiment dirs if they don't exist
+    if not os.path.exists(experiment_dir + train_test): os.makedirs(experiment_dir + train_test)
+
+    checkpoints = [file for file in os.listdir(checkpoints_dir) if file.endswith('.pth')]   # Filters for only .pth files
+    results = defaultdict(list)
+
+    # Iterates over all checkpoints in directory
+    for i, checkpoint in enumerate(checkpoints):
+        if i == 99:
+            model.load_state_dict(torch.load(checkpoints_dir + checkpoint))
+            model = model.eval()
+            checkpoint_metrics = evaluate(dataset, model, metrics, i, batch_size=batch_size, device=device, experiment_dir=experiment_dir,
+                                        display_step=display_step, train_test='testing')
+            for k, v in checkpoint_metrics.items():
+                results[k].append(v.item())
+            
+            # Plots metrics
+            visualize_batch_eval(results, i, experiment_dir=experiment_dir, train_test=train_test)
+
+            print('Epoch:', i, checkpoint_metrics)
+
+            
 
 
 # Main function
@@ -56,19 +89,30 @@ if __name__ == '__main__':
                          crop_shape=target_shape)
     batch_size = 8
 
+
     '''
     Model parameters
     '''
+    device = 'cuda:1'
     model = unet_int.UNet(input_dim, label_dim).to(device)
-    model.load_state_dict(torch.load('exp3/checkpoint10.pth'))
-    model = model.eval()
+    # model.load_state_dict(torch.load('exp3/checkpoint10.pth'))
+    # model = model.eval()
     metrics = torchmetrics.MetricCollection({
         'psnr': my_metrics.PSNRMetricCPU(),
         'ssim': my_metrics.SSIMMetricCPU(),
         'chamfer': chamfer_dist.ChamferDistance2dMetric(binary=0.5),
         'mse': torchmetrics.MeanSquaredError(),
     }).to(device).eval()
+    checkpoints_dir = 'exp3/'
 
-    results = evaluate(dataset, model, metrics, batch_size=batch_size, device=device)
-    print(results)
+    '''
+    Display and storage parameters
+    '''
+    experiment_dir = 'exp_temp/'
+    display_step = 10
+    train_test = 'testing'
+
+    evaluate_multiple_checkpoints(dataset, model, metrics, checkpoints_dir, batch_size=batch_size, device=device, 
+                                  experiment_dir=experiment_dir, display_step=display_step, train_test=train_test)
+    
 

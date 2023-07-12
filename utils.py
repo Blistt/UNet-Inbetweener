@@ -4,9 +4,8 @@ import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 import os
-from torchvision import transforms
-import imageio
 from PIL import Image
+import math
 
 
 
@@ -149,3 +148,26 @@ def visualize_batch(input1, labels, input2, pred, epoch, experiment_dir='exp/', 
 
             # Saves gifs of the predicted and ground truth triplets
             create_gif(input1, labels, input2, pred, experiment_dir, epoch)
+
+def visualize_batch_eval(metrics, epoch, experiment_dir='exp/', train_test='testing', size=(20, 20)):
+    # Plots all metrics in metrics dictionary in a plt figure
+    # Create a new figure with multiple subplots arranged in a square grid
+    num_metrics = len(metrics)
+    num_rows = math.ceil(math.sqrt(num_metrics))
+    num_cols = math.ceil(num_metrics / num_rows)
+    fig, axes = plt.subplots(num_rows, num_cols, figsize=size)
+    
+    # Flatten the axes array to make it easier to iterate over
+    axes = axes.flatten()
+    
+    # Plot the values of each metric in a separate subplot
+    for i, (metric, values) in enumerate(metrics.items()):
+        axes[i].plot(values, label=metric)
+        axes[i].set_title(metric)
+        axes[i].set_xlabel('epoch')
+    
+    # Save the plot to a file
+    plt.savefig(f'{experiment_dir+train_test}/metrics_{epoch}.png')
+    
+    # Show the plot
+    plt.show()

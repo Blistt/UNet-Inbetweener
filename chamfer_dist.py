@@ -136,27 +136,16 @@ batch of images
 '''
 # Overall distance
 def batch_chamfer_distance(gt, pred, block=1024, return_more=False, bit_reverse=True, binarize_at=0.5):
-    # Saves image before binarization
-    save_image(pred, 'pred.png')
 
     # Binarize images
     gt = (gt>binarize_at).float()
     pred = (pred>binarize_at).float()
 
-    # Saves image after binarization
-    save_image(pred, 'pred_binarized.png')
-    save_image(gt, 'true_binarized.png')
-
     if bit_reverse:
         gt = 1-gt
         pred = 1-pred
-
-    save_image(pred, 'bit_reverse.png')
-    
     t = batch_chamfer_distance_t(gt, pred, block=block)
-    print('t chamfer', t)
     p = batch_chamfer_distance_p(gt, pred, block=block)
-    print('p chamfer', p)
     cd = (t + p) / 2
     return cd
 

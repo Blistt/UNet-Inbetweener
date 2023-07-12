@@ -9,6 +9,8 @@ import imageio
 from PIL import Image
 
 
+
+
 def crop(image, new_shape):
     '''
     Function for cropping an image tensor: Given an image tensor and the new shape,
@@ -43,6 +45,17 @@ def pre_process(img, binarize_at=0.0, resize_to=(0,0)):
         img[img<thresh] = 0
         img[img>=thresh] = 255
     return img
+
+def normalize(imgs):
+    '''
+    Normalizes each image in a batch of images to the range 0-1
+        imgs: a pytorch tensor of shape (batch size, channels, height, width)
+    '''
+    imgs_min = imgs.min(dim=3, keepdim=True)[0].min(dim=2, keepdim=True)[0].min(dim=1, keepdim=True)[0]
+    imgs_max = imgs.max(dim=3, keepdim=True)[0].max(dim=2, keepdim=True)[0].max(dim=1, keepdim=True)[0]
+    imgs_range = imgs_max - imgs_min
+    return (imgs - imgs_min) / imgs_range
+    
 
 
 def show_tensor_images(image_tensor, num_images=16, size=(1, 28, 28)):
@@ -136,35 +149,3 @@ def visualize_batch(input1, labels, input2, pred, epoch, experiment_dir='exp/', 
 
             # Saves gifs of the predicted and ground truth triplets
             create_gif(input1, labels, input2, pred, experiment_dir, epoch)
-        
-
-
-
-
-# """Read Minidataset"""
-# def read_minidataset(data_dir, transform=True, pre_process=False, crop_shape=(0,0)):
-#     triplet_paths = [os.path.join(data_dir, p) for p in os.listdir(data_dir)]
-#     triplets = []
-#     for triplet_path in triplet_paths:
-#         triplet = []
-#         for img_path in os.listdir(triplet_path):
-#             img = cv2.imread(os.path.join(triplet_path, img_path), cv2.IMREAD_GRAYSCALE)
-#             print('img_shape', img.shape)
-#             triplet.append(img)
-#         triplets.append(np.array(triplet))
-#         print('num_images', len(triplet))
-#     print('num_triplets', len(triplets))
-    
-#     triplets = np.array(triplets)
-
-#     if pre_process:
-#         triplets = pre_process(triplets, binarize_at=0.0, resize_to=(94,94))
-    
-#     if transform:
-#         transform=transforms.Compose([transforms.ToTensor(),])
-#         triplets = transform(triplets)
-    
-#     if crop_shape != (0,0):
-#             triplets[:, 1, :, :] = crop(triplets[:, 1, :, :] , crop_shape)
-
-#     return triplets

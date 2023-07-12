@@ -2,6 +2,9 @@ import torch
 from torch import nn
 import torchmetrics
 import skimage
+import kornia
+from torchvision.utils import save_image
+from utils import normalize
 
 
 class SSIMMetric(torchmetrics.Metric):
@@ -19,6 +22,7 @@ class SSIMMetric(torchmetrics.Metric):
         return
     def compute(self):
         return self.running_sum.float() / self.running_count
+    
 class SSIMMetricCPU(torchmetrics.Metric):
     full_state_update=False
     def __init__(self, **kwargs):
@@ -29,11 +33,11 @@ class SSIMMetricCPU(torchmetrics.Metric):
     def update(self, preds: torch.Tensor, target: torch.Tensor):
         ans = [
             skimage.metrics.structural_similarity(
-                p.permute(1,2,0).cpu().numpy(),
-                t.permute(1,2,0).cpu().numpy(),
-                multichannel=True,
+                p.squeeze().cpu().numpy(),
+                t.squeeze().cpu().numpy(),
+                multichannel=False,
                 gaussian=True,
-                # data_range=255,
+                data_range=1.0,
             )
             for p,t in zip(preds, target)
         ]
@@ -70,7 +74,6 @@ class PSNRMetricCPU(torchmetrics.Metric):
             skimage.metrics.peak_signal_noise_ratio(
                 p.permute(1,2,0).cpu().numpy(),
                 t.permute(1,2,0).cpu().numpy(),
-                # data_range=255,
             )
             for p,t in zip(preds, target)
         ]

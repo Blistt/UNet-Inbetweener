@@ -17,7 +17,7 @@ import os
 Main Evaluation Function
     Evaluates a dataset given a set of metrics, and a model with weights already loaded
 '''
-def evaluate(dataset, model, metrics, epoch, batch_size=8, display_step=10, device='cuda:1', experiment_dir='exp/', train_test='testing'):
+def evaluate(dataset, model, metrics, epoch=0, batch_size=8, display_step=10, device='cuda:1', experiment_dir='exp/', train_test='testing'):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
     results = defaultdict(list)
@@ -31,8 +31,8 @@ def evaluate(dataset, model, metrics, epoch, batch_size=8, display_step=10, devi
             
             # Saves images of predictions and real images
             if epoch % display_step == 0:
-                save_image(labels, experiment_dir + 'eval_' + str(epoch) + '_true.png', nrow=2, normalize=False)
-                save_image(pred, experiment_dir + 'eval_' + str(epoch) + '_preds.png', nrow=2, normalize=False)
+                save_image((labels>0.5).float(), experiment_dir + 'eval_' + str(epoch) + '_true.png', nrow=2, normalize=False)
+                save_image((pred>0.5).float(), experiment_dir + 'eval_' + str(epoch) + '_preds.png', nrow=2, normalize=False)
             
             raw_metrics = metrics(pred, labels) # Computes metrics
         for k,v in raw_metrics.items():
@@ -56,30 +56,30 @@ def evaluate_multiple_checkpoints(dataset, model, metrics, checkpoints_dir, batc
 
     # Iterates over all checkpoints in directory
     for i, checkpoint in enumerate(checkpoints):
-        if i == 99:
-            model.load_state_dict(torch.load(checkpoints_dir + checkpoint))
-            model = model.eval()
-            checkpoint_metrics = evaluate(dataset, model, metrics, i, batch_size=batch_size, device=device, experiment_dir=experiment_dir,
-                                        display_step=display_step, train_test='testing')
-            for k, v in checkpoint_metrics.items():
-                results[k].append(v.item())
-            
-            # Plots metrics
-            visualize_batch_eval(results, i, experiment_dir=experiment_dir, train_test=train_test)
+        model.load_state_dict(torch.load(checkpoints_dir + checkpoint))
+        model = model.eval()
+        checkpoint_metrics = evaluate(dataset, model, metrics, i, batch_size=batch_size, device=device, experiment_dir=experiment_dir,
+                                    display_step=display_step, train_test='testing')
+        for k, v in checkpoint_metrics.items():
+            results[k].append(v.item())
+        
+        # Plots metrics
+        visualize_batch_eval(results, i, experiment_dir=experiment_dir, train_test=train_test)
 
-            print('Epoch:', i, checkpoint_metrics)
+        print('Epoch:', i, checkpoint_metrics)
 
             
 
 
 # Main function
 if __name__ == '__main__':
-    device = torch.device('cuda')
+    torch.cuda.set_device(1)
+    device = torch.device('cuda:1')
 
     '''
     Dataset parameters
     '''
-    data_dir = 'mini_datasets/eval/'
+    data_dir = '/data/farriaga/atd_12k/Line_Art/test_2k_original/'
     input_dim = 2
     label_dim = 1
     initial_shape = (512, 512)
@@ -87,16 +87,15 @@ if __name__ == '__main__':
     binary_threshold = 0.75
     dataset = MyDataset(data_dir, transform=transforms.ToTensor(), resize_to=initial_shape, binarize_at=binary_threshold,
                          crop_shape=target_shape)
-    batch_size = 8
+    batch_size = 16
 
 
     '''
     Model parameters
     '''
-    device = 'cuda:1'
     model = unet_int.UNet(input_dim, label_dim).to(device)
-    # model.load_state_dict(torch.load('exp3/checkpoint10.pth'))
-    # model = model.eval()
+    model.load_state_dict(torch.load('exp3/checkpoint10.pth'))
+    model = model.eval()
     metrics = torchmetrics.MetricCollection({
         'psnr': my_metrics.PSNRMetricCPU(),
         'ssim': my_metrics.SSIMMetricCPU(),
@@ -108,11 +107,10 @@ if __name__ == '__main__':
     '''
     Display and storage parameters
     '''
-    experiment_dir = 'exp_temp/'
+    experiment_dir = 'exp3/'
     display_step = 10
     train_test = 'testing'
 
     evaluate_multiple_checkpoints(dataset, model, metrics, checkpoints_dir, batch_size=batch_size, device=device, 
                                   experiment_dir=experiment_dir, display_step=display_step, train_test=train_test)
     
-

@@ -9,7 +9,7 @@ import torchmetrics
 import my_metrics
 import chamfer_dist
 import numpy as np
-from utils import visualize_batch_eval
+from utils import visualize_batch_eval, write_log
 from torchvision.utils import save_image
 import os
 
@@ -37,6 +37,9 @@ def evaluate(dataset, model, metrics, epoch=0, batch_size=8, display_step=10, de
             raw_metrics = metrics(pred, labels) # Computes metrics
         for k,v in raw_metrics.items():
             results[k].append(v.item())
+
+        # Store metrics log in a csv file
+        write_log(results, experiment_dir, train_test)
     
     # Returns the average over all batches in the epoch for each metric
     return {k: np.mean(results[k]) for k,v in results.items()}
@@ -87,15 +90,13 @@ if __name__ == '__main__':
     binary_threshold = 0.75
     dataset = MyDataset(data_dir, transform=transforms.ToTensor(), resize_to=initial_shape, binarize_at=binary_threshold,
                          crop_shape=target_shape)
-    batch_size = 16
+    batch_size = 32
 
 
     '''
     Model parameters
     '''
     model = unet_int.UNet(input_dim, label_dim).to(device)
-    model.load_state_dict(torch.load('exp3/checkpoint10.pth'))
-    model = model.eval()
     metrics = torchmetrics.MetricCollection({
         'psnr': my_metrics.PSNRMetricCPU(),
         'ssim': my_metrics.SSIMMetricCPU(),

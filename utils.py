@@ -6,6 +6,7 @@ import numpy as np
 import os
 from PIL import Image
 import math
+import csv
 
 
 
@@ -171,3 +172,17 @@ def visualize_batch_eval(metrics, epoch, experiment_dir='exp/', train_test='test
     
     # Show the plot
     plt.show()
+
+def write_log(log, experiment_dir, train_test):
+    # Open a new file for writing
+    with open(experiment_dir+train_test+'.csv', 'w', newline='') as f:
+        writer = csv.writer(f)
+        
+        # Write the header row
+        header = ['index'] + list(log.keys())
+        writer.writerow(header)
+        
+        # Write the data rows
+        for i in range(len(log['chamfer'])):
+            row = [i] + [log[key][i] for key in log]
+            writer.writerow(row)

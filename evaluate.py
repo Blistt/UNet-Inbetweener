@@ -82,7 +82,8 @@ if __name__ == '__main__':
     '''
     Dataset parameters
     '''
-    data_dir = '/data/farriaga/atd_12k/Line_Art/test_2k_original/'
+    # data_dir = '/data/farriaga/atd_12k/Line_Art/test_2k_original/'
+    data_dir = 'mini_datasets/eval/'
     input_dim = 2
     label_dim = 1
     initial_shape = (512, 512)
@@ -108,7 +109,7 @@ if __name__ == '__main__':
     '''
     Display and storage parameters
     '''
-    experiment_dir = 'exp3/'
+    experiment_dir = 'exp_temp/'
     display_step = 10
     train_test = 'testing'
 

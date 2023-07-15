@@ -22,7 +22,9 @@ if __name__ == '__main__':
     initial_shape = (512, 512)
     target_shape = (373, 373)
     binary_threshold = 0.75
-    transform=transforms.Compose([transforms.ToTensor(),])
+    transform=transforms.Compose([transforms.ToTensor(),
+                                  transforms.Grayscale(num_output_channels=1),
+                                  transforms.Resize(initial_shape),])
     train_dataset = MyDataset(train_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold,
                               crop_shape=target_shape)
     # test_data_dir = '/data/farriaga/atd_12k/Line_Art/test_2k_original/'
@@ -50,7 +52,7 @@ if __name__ == '__main__':
     Visualization parameters
     '''
     display_step = 20
-    experiment_dir = 'exp4_mini_crop/'
+    experiment_dir = 'temp_test/'
     if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 
     train(train_dataset, model, opt, loss, n_epochs=num_epochs, batch_size=batch_size, device=device,

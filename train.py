@@ -2,12 +2,14 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 from dataset_class import MyDataset
-import unet_int
+import models.unet_crop as unet_crop
+import models.unet_full as unet_full
 import tqdm
 import torch
 from utils import visualize_batch
 import os
 from torch import nn
+from test import test
 
 def train(tra_dataset, model, model_opt, criterion, test_dataset=None, n_epochs=10, batch_size=10, device='cuda', experiment_dir='exp/', display_step=10, my_dataset=None):
     '''
@@ -36,7 +38,10 @@ def train(tra_dataset, model, model_opt, criterion, test_dataset=None, n_epochs=
 
         tr_losses.append(epoch_loss/len(dataloader))
 
-
+        # Gets the sigmoid activation of the predictions
+        with torch.no_grad():
+            pred = torch.sigmoid(pred)
+            
         '''
         Performs testing if specified
         '''
@@ -99,69 +104,48 @@ def train(tra_dataset, model, model_opt, criterion, test_dataset=None, n_epochs=
             # Saves checkpoing with model's current state
             torch.save(model.state_dict(), experiment_dir + 'checkpoint' + str(epoch) + '.pth')
 
-def test(dataset, model, criterion, epoch, batch_size=8, device='cuda:1', experiment_dir='exp/', display_step=10, train_test='testing'):
-    '''
-    Testing a single epoch
-    '''
-    epoch_loss = 0
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-    input1, labels, input2 = 0, 0, 0
-
-    for input1, labels, input2 in tqdm.tqdm(dataloader):
-        # Flatten the image
-        input1, labels, input2 = input1.to(device), labels.to(device), input2.to(device)
-
-        pred = model(input1, input2)
-        model_loss = criterion(pred, labels)
-        epoch_loss += model_loss.item()
-
-    '''
-    Saves checkpoints, visualizes predictions and plots losses
-    '''
-    if epoch % display_step == 0:
-        # Visualizes predictions and ground truth
-        visualize_batch(input1, labels, input2, pred, epoch, experiment_dir=experiment_dir, test_losses=epoch_loss, train_test=train_test)
-        
-        # Returns average loss
-    return epoch_loss/len(dataloader)
-
 
 if __name__ == '__main__':
     '''
     Dataset parameters
     '''
     device = 'cuda:1'
-    train_data_dir = '/data/farriaga/atd_12k/Line_Art/train_10k/'
+    # train_data_dir = '/data/farriaga/atd_12k/Line_Art/train_10k/'
+    train_data_dir = 'mini_datasets/mini_train_triplets/'
     input_dim = 2
     label_dim = 1
     initial_shape = (512, 512)
     target_shape = (373, 373)
     binary_threshold = 0.75
     transform=transforms.Compose([transforms.ToTensor(),])
-    train_dataset = MyDataset(train_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold, crop_shape=target_shape)
-    test_data_dir = '/data/farriaga/atd_12k/Line_Art/test_2k_original/'
-    test_dataset = MyDataset(test_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold, crop_shape=target_shape)
+    train_dataset = MyDataset(train_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold,
+                              crop_shape=target_shape)
+    # test_data_dir = '/data/farriaga/atd_12k/Line_Art/test_2k_original/'
+    test_data_dir = 'mini_datasets/mini_test_triplets/'
+    test_dataset = MyDataset(test_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold,
+                             crop_shape=target_shape)
 
     #My dataset
     my_test_data_dir = 'mini_datasets/mini_real_test_triplets/'
-    my_test_dataset = MyDataset(my_test_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold, crop_shape=target_shape)
+    my_test_dataset = MyDataset(my_test_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold,
+                                crop_shape=target_shape)
 
     '''
     Training parameters
     '''
-    model = unet_int.UNet(input_dim, label_dim).to(device)
+    model = unet_crop.UNet(input_dim, label_dim).to(device)
     loss = nn.BCEWithLogitsLoss()
     lr = 0.0002
     opt = torch.optim.Adam(model.parameters(), lr=lr)
-    batch_size = 8
-    num_epochs = 100
+    batch_size = 12
+    num_epochs = 1000
 
 
     '''
     Visualization parameters
     '''
-    display_step = 1
-    experiment_dir = 'exp4/'
+    display_step = 20
+    experiment_dir = 'check/'
     if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 
     train(train_dataset, model, opt, loss, n_epochs=num_epochs, batch_size=batch_size, device=device,

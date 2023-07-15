@@ -9,7 +9,7 @@ import torch
 from utils import visualize_batch
 import os
 from torch import nn
-from train_test import train, test
+from train import train, test
 
 if __name__ == '__main__':
     '''

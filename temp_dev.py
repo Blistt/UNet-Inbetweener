@@ -1,13 +1,14 @@
 from torchvision import transforms
 from torch.utils.data import DataLoader
 from dataset_class import MyDataset
-import unet_int
+import models.unet_full as unet_full
+import models.unet_crop as unet_crop
 import tqdm
 from collections import defaultdict
 import torch
 import torchmetrics
-import my_metrics
-import chamfer_dist
+import evaluation.my_metrics as my_metrics
+import evaluation.chamfer_dist as chamfer_dist
 import numpy as np
 from utils import visualize_batch_eval, write_log
 from torchvision.utils import save_image
@@ -26,9 +27,11 @@ def evaluate(dataset, model, metrics, epoch=0, batch_size=8, display_step=10, de
         input1, labels, input2 = input1.to(device), labels.to(device), input2.to(device)
 
         with torch.no_grad():
+            print('input1 shape:', input1.shape)
             pred = model(input1, input2)
             pred = torch.sigmoid(pred)  # THIS IS SOMETHING TO PAY ATTENTION TO, IT MIGHT BE NEEDED EVERYWHERE ELSE OR REMOVED
-            
+            print('pred shape:', pred.shape)
+
             # Saves images of predictions and real images
             if epoch % display_step == 0:
                 save_image((labels>0.5).float(), experiment_dir + 'eval_' + str(epoch) + '_true.png', nrow=2, normalize=False)
@@ -82,8 +85,7 @@ if __name__ == '__main__':
     '''
     Dataset parameters
     '''
-    # data_dir = '/data/farriaga/atd_12k/Line_Art/test_2k_original/'
-    data_dir = 'mini_datasets/eval/'
+    data_dir = '/data/farriaga/atd_12k/Line_Art/test_2k_original/'
     input_dim = 2
     label_dim = 1
     initial_shape = (512, 512)
@@ -97,7 +99,7 @@ if __name__ == '__main__':
     '''
     Model parameters
     '''
-    model = unet_int.UNet(input_dim, label_dim).to(device)
+    model = unet_full.UNet(input_dim, label_dim).to(device)
     metrics = torchmetrics.MetricCollection({
         'psnr': my_metrics.PSNRMetricCPU(),
         'ssim': my_metrics.SSIMMetricCPU(),
@@ -113,6 +115,10 @@ if __name__ == '__main__':
     display_step = 10
     train_test = 'testing'
 
-    evaluate_multiple_checkpoints(dataset, model, metrics, checkpoints_dir, batch_size=batch_size, device=device, 
-                                  experiment_dir=experiment_dir, display_step=display_step, train_test=train_test)
+    # Evaluates a single checkpoint
+    evaluate(dataset, model, metrics, batch_size=1, experiment_dir=experiment_dir)
+
+
+    # evaluate_multiple_checkpoints(dataset, model, metrics, checkpoints_dir, batch_size=batch_size, device=device, 
+    #                               experiment_dir=experiment_dir, display_step=display_step, train_test=train_test)
     

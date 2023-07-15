@@ -9,8 +9,8 @@ import torch
 from utils import visualize_batch
 import os
 from torch import nn
-from train_test import train
-from train_test import test
+from train import train
+from train import test
 
 
 if __name__ == '__main__':
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     Visualization parameters
     '''
     display_step = 20
-    experiment_dir = 'exp4_mini_crop/'
+    experiment_dir = 'exp4_mini_full/'
     if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 
     train(train_dataset, model, opt, loss, n_epochs=num_epochs, batch_size=batch_size, device=device,

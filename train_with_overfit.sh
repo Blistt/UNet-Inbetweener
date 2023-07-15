@@ -1,3 +1,3 @@
 #!/bin/bash
-python mini_exp_crop.py
-python mini_exp_full.py
+python exp_crop.py
+python exp_full.py

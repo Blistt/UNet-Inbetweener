@@ -38,9 +38,6 @@ def train(tra_dataset, model, model_opt, criterion, test_dataset=None, n_epochs=
 
         tr_losses.append(epoch_loss/len(dataloader))
 
-        # Gets the sigmoid activation of the predictions
-        with torch.no_grad():
-            pred = torch.sigmoid(pred)
 
         '''
         Performs testing if specified
@@ -95,6 +92,9 @@ def train(tra_dataset, model, model_opt, criterion, test_dataset=None, n_epochs=
             print(f"Epoch {epoch}: Step {cur_step}: Training loss: {model_loss.item()} Testing loss: {test_losses[-1]}")
             
             # Visualizes predictions and ground truth
+            # Gets the sigmoid activation of the predictions
+            with torch.no_grad():
+                pred = (torch.sigmoid(pred) > 0.5).float()
             visualize_batch(input1, labels, input2, pred, epoch,
                             experiment_dir=experiment_dir,
                             train_losses=tr_losses,

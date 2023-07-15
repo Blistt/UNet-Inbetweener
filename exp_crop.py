@@ -52,7 +52,7 @@ if __name__ == '__main__':
     Visualization parameters
     '''
     display_step = 20
-    experiment_dir = 'temp_test/'
+    experiment_dir = 'exp5_mini_crop/'
     if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 
     train(train_dataset, model, opt, loss, n_epochs=num_epochs, batch_size=batch_size, device=device,

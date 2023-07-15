@@ -41,7 +41,7 @@ def train(tra_dataset, model, model_opt, criterion, test_dataset=None, n_epochs=
         # Gets the sigmoid activation of the predictions
         with torch.no_grad():
             pred = torch.sigmoid(pred)
-            
+
         '''
         Performs testing if specified
         '''
@@ -84,7 +84,7 @@ def train(tra_dataset, model, model_opt, criterion, test_dataset=None, n_epochs=
                 
                 # Evaluate the model on the MY dataset
                 with torch.no_grad():
-                    unused_loss = test(my_test_dataset, model, criterion, epoch, batch_size=batch_size, device=device,
+                    unused_loss = test(my_dataset, model, criterion, epoch, batch_size=batch_size, device=device,
                                        experiment_dir=experiment_dir,
                                        display_step=display_step,
                                        train_test='extra_testing')

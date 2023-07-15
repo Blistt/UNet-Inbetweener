@@ -117,18 +117,18 @@ if __name__ == '__main__':
     initial_shape = (512, 512)
     target_shape = (373, 373)
     binary_threshold = 0.75
-    transform=transforms.Compose([transforms.ToTensor(),])
-    train_dataset = MyDataset(train_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold,
-                              crop_shape=target_shape)
+    transform=transforms.Compose([transforms.ToTensor(),
+                                  transforms.Resize(target_shape),
+                                  transforms.functional.to_grayscale,]
+                                 )
+    train_dataset = MyDataset(train_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold)
     # test_data_dir = '/data/farriaga/atd_12k/Line_Art/test_2k_original/'
     test_data_dir = 'mini_datasets/mini_test_triplets/'
-    test_dataset = MyDataset(test_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold,
-                             crop_shape=target_shape)
+    test_dataset = MyDataset(test_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold)
 
     #My dataset
     my_test_data_dir = 'mini_datasets/mini_real_test_triplets/'
-    my_test_dataset = MyDataset(my_test_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold,
-                                crop_shape=target_shape)
+    my_test_dataset = MyDataset(my_test_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold)
 
     '''
     Training parameters

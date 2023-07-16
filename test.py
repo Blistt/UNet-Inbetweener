@@ -30,7 +30,7 @@ def test(dataset, model, criterion, epoch, batch_size=8, device='cuda:1', experi
     
         # Binarizes prediction
         with torch.no_grad():
-            pred = (torch.sigmoid(pred) > 0.5).float()
+            pred = torch.sigmoid(pred)
             # Visualizes predictions and ground truth
             visualize_batch(input1, labels, input2, pred, epoch, experiment_dir=experiment_dir, test_losses=epoch_loss, train_test=train_test)
         

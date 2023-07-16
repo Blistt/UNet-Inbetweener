@@ -92,9 +92,8 @@ def train(tra_dataset, model, model_opt, criterion, test_dataset=None, n_epochs=
             print(f"Epoch {epoch}: Step {cur_step}: Training loss: {model_loss.item()} Testing loss: {test_losses[-1]}")
             
             # Visualizes predictions and ground truth
-            # Gets the sigmoid activation of the predictions
             with torch.no_grad():
-                pred = (torch.sigmoid(pred) > 0.5).float()
+                pred = torch.sigmoid(pred)         # Gets the sigmoid activation of the predictions
             visualize_batch(input1, labels, input2, pred, epoch,
                             experiment_dir=experiment_dir,
                             train_losses=tr_losses,
@@ -119,7 +118,7 @@ if __name__ == '__main__':
     binary_threshold = 0.75
     transform=transforms.Compose([transforms.ToTensor(),
                                   transforms.Resize(target_shape),
-                                  transforms.functional.to_grayscale,]
+                                  transforms.Grayscale(num_output_channels=1),]
                                  )
     train_dataset = MyDataset(train_data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold)
     # test_data_dir = '/data/farriaga/atd_12k/Line_Art/test_2k_original/'

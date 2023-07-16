@@ -1,13 +1,13 @@
 from torchvision import transforms
 from torch.utils.data import DataLoader
 from dataset_class import MyDataset
-import models.unet_crop as unet_crop
+import models.unet_full as unet_full
 import tqdm
 from collections import defaultdict
 import torch
 import torchmetrics
-import my_metrics
-import chamfer_dist
+import evaluation.my_metrics as my_metrics
+import evaluation.chamfer_dist as chamfer_dist
 import numpy as np
 from utils import visualize_batch_eval, write_log
 from torchvision.utils import save_image
@@ -83,34 +83,36 @@ if __name__ == '__main__':
     Dataset parameters
     '''
     # data_dir = '/data/farriaga/atd_12k/Line_Art/test_2k_original/'
-    data_dir = 'mini_datasets/eval/'
+    data_dir = 'mini_datasets/mini_test_triplets/'
     input_dim = 2
     label_dim = 1
     initial_shape = (512, 512)
     target_shape = (373, 373)
     binary_threshold = 0.75
-    dataset = MyDataset(data_dir, transform=transforms.ToTensor(), resize_to=initial_shape, binarize_at=binary_threshold,
-                         crop_shape=target_shape)
+    transform =transforms.Compose([transforms.ToTensor(),
+                                transforms.Grayscale(num_output_channels=1),
+                                transforms.Resize(initial_shape, antialias=True),])
+    dataset = MyDataset(data_dir, transform=transform, resize_to=initial_shape, binarize_at=binary_threshold)
     batch_size = 32
 
 
     '''
     Model parameters
     '''
-    model = unet_crop.UNet(input_dim, label_dim).to(device)
+    model = unet_full.UNet(input_dim, label_dim).to(device)
     metrics = torchmetrics.MetricCollection({
         'psnr': my_metrics.PSNRMetricCPU(),
         'ssim': my_metrics.SSIMMetricCPU(),
         'chamfer': chamfer_dist.ChamferDistance2dMetric(binary=0.5),
         'mse': torchmetrics.MeanSquaredError(),
     }).to(device).eval()
-    checkpoints_dir = 'exp3/'
+    checkpoints_dir = 'exp5_full/'
 
     '''
     Display and storage parameters
     '''
-    experiment_dir = 'exp_temp/'
-    display_step = 10
+    experiment_dir = 'exp5_full_nonbinarized/'
+    display_step = 1
     train_test = 'testing'
 
     evaluate_multiple_checkpoints(dataset, model, metrics, checkpoints_dir, batch_size=batch_size, device=device, 

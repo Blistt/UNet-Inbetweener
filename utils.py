@@ -106,6 +106,7 @@ def visualize_batch(input1, labels, input2, pred, epoch, experiment_dir='exp/', 
             show_tensor_images(pred, num_images=pred.shape[0])
             plt.title("Generated")
             plt.savefig(experiment_dir + 'gens' + str(epoch) + '.png')
+            plt.close()
 
             # Saves gifs of the predicted and ground truth triplets
             create_gif(input1, labels, input2, pred, experiment_dir, epoch)
@@ -120,6 +121,7 @@ def visualize_batch(input1, labels, input2, pred, epoch, experiment_dir='exp/', 
             show_tensor_images(pred)
             plt.title("Generated")
             plt.savefig(experiment_dir + 'gens' + str(epoch) + '.png')
+            plt.close()
 
             # Saves gifs of the predicted and ground truth triplets
             create_gif(input1, labels, input2, pred, experiment_dir, epoch)
@@ -146,6 +148,7 @@ def visualize_batch(input1, labels, input2, pred, epoch, experiment_dir='exp/', 
             show_tensor_images(pred)
             plt.title("Generated")
             plt.savefig(experiment_dir + 'gens' + str(epoch) + '.png')
+            plt.close()
 
             # Saves gifs of the predicted and ground truth triplets
             create_gif(input1, labels, input2, pred, experiment_dir, epoch)
@@ -170,8 +173,7 @@ def visualize_batch_eval(metrics, epoch, experiment_dir='exp/', train_test='test
     # Save the plot to a file
     plt.savefig(f'{experiment_dir+train_test}/metrics_{epoch}.png')
     
-    # Show the plot
-    plt.show()
+    plt.close()
 
 def write_log(log, experiment_dir, train_test):
     # Open a new file for writing

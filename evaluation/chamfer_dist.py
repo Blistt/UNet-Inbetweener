@@ -9,9 +9,9 @@ from torchvision.utils import save_image
 
 # CuPy kernel launcher
 try:
-    # @cupy.memoize(for_each_device=True)
     def cupy_launch(func, kernel):
-        return cupy.cuda.compile_with_cache(kernel).get_function(func)
+        raw_kernel = cupy.RawKernel(kernel, func)
+        return raw_kernel
 except:
     cupy_launch = lambda func,kernel: None
 

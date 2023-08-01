@@ -41,19 +41,19 @@ if __name__ == '__main__':
     Training parameters
     '''
     model = unet_crop.UNet(input_dim, label_dim).to(device)
-    loss = nn.BCELoss()
+    loss = nn.BCEWithLogitsLoss()
     lr = 0.0002
     opt = torch.optim.Adam(model.parameters(), lr=lr)
     batch_size = 8
-    num_epochs = 500
+    num_epochs = 1000
     save_checkpoints = False
 
 
     '''
     Visualization parameters
     '''
-    display_step = 1
-    experiment_dir = 'exp8_mini_crop/'
+    display_step = 20
+    experiment_dir = 'temp2/'
     if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 
     train(train_dataset, model, opt, loss, n_epochs=num_epochs, batch_size=batch_size, device=device, save_checkpoints=save_checkpoints,

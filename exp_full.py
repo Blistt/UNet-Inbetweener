@@ -37,7 +37,7 @@ if __name__ == '__main__':
     '''
     Training parameters
     '''
-    model = unet_full.UNet(input_dim, label_dim, use_bn=True).to(device)
+    model = unet_full.UNet(input_dim, label_dim, use_bn=True, use_dropout=True).to(device)
     loss = nn.BCEWithLogitsLoss()
     lr = 0.0002
     opt = torch.optim.Adam(model.parameters(), lr=lr)
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     Visualization parameters
     '''
     display_step = 1
-    experiment_dir = 'exp6_full/'
+    experiment_dir = 'exp7_full/'
     if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 
     train(train_dataset, model, opt, loss, n_epochs=num_epochs, batch_size=batch_size, device=device,

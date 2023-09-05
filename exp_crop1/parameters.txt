@@ -1,4 +1,5 @@
-UNet(
+('tra_dataset', <_dataset_class.MyDataset object at 0x7f1a32d93c90>)
+('gen', UNetCrop(
   (upfeature): FeatureMapBlock(
     (conv): Conv2d(2, 64, kernel_size=(1, 1), stride=(1, 1))
   )
@@ -57,4 +58,40 @@ UNet(
   (downfeature): FeatureMapBlock(
     (conv): Conv2d(64, 1, kernel_size=(1, 1), stride=(1, 1))
   )
-)
+  (activation): Sigmoid()
+))
+('gen_opt', Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 0.0002
+    maximize: False
+    weight_decay: 0
+))
+('r1', EDT_Loss())
+('lambr1', 1.0)
+('r2', BCELoss())
+('r3', None)
+('lambr2', 2.0)
+('lambr3', 6.0)
+('n_epochs', 100)
+('batch_size', 8)
+('device', 'cuda:1')
+('metrics', MetricCollection(
+  (chamfer): ChamferDistance2dMetric()
+  (mse): MeanSquaredError()
+  (psnr): PSNRMetricCPU()
+  (ssim): SSIMMetricCPU()
+))
+('display_step', 10)
+('plot_step', 1)
+('test_dataset', <_dataset_class.MyDataset object at 0x7f1a457f5bd0>)
+('my_dataset', <_dataset_class.MyDataset object at 0x7f1a453d9350>)
+('save_checkpoints', False)
+('experiment_dir', 'exp_crop1/')
+('f', <_io.TextIOWrapper name='exp_crop1/parameters.txt' mode='w' encoding='UTF-8'>)

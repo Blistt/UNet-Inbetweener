@@ -115,14 +115,28 @@ def visualize_batch_loss(epoch, experiment_dir='exp/', train_gen_losses=None, te
         experiment_dir = experiment_dir + 'losses/'
         if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)
 
+        t_scale = len(train_gen_losses) // len(test_gen_losses)
+
         if train_gen_losses is not None and test_gen_losses is not None:
             # Plots Generator and Discriminator losses in the same plot
             plt.figure(figsize=figsize)
+            plt.subplot(1,2,1)
             plt.plot(train_gen_losses, label='Training')
-            plt.plot(test_gen_losses, label='Testing')
-            plt.title("Training Loss per Training Step")
+            plt.title("Training Loss per step")
             plt.xlabel("Training step")
             plt.ylabel("Loss")
+            plt.subplot(1,2,2)
+            plt.plot(test_gen_losses, label='Testing')
+            plt.title("Testing Loss per step")
+            plt.xlabel("Testing step")
+            plt.ylabel("Loss")
+
+            # # Modify x-axis tick labels
+            # x_ticks = [i for i in range(len(test_gen_losses))]
+            # x_labels = [str(i * t_scale) for i in range(len(test_gen_losses))]
+            # plt.xticks(x_ticks, x_labels)
+
+            plt.legend()
             plt.savefig(experiment_dir + 'loss' + str(epoch) + '.png')
             plt.close()
         

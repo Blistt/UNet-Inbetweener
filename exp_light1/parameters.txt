@@ -1,0 +1,65 @@
+('tra_dataset', <_dataset_class.MyDataset object at 0x7f568b0e9c90>)
+('gen', GeneratorLight(
+  (down_sample_blocks): Sequential(
+    (0): Conv2d(2, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+    (1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (2): LeakyReLU(negative_slope=0.02, inplace=True)
+    (3): Conv2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=False)
+    (4): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (5): LeakyReLU(negative_slope=0.02, inplace=True)
+    (6): Conv2d(128, 256, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=False)
+    (7): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (8): LeakyReLU(negative_slope=0.02, inplace=True)
+    (9): Conv2d(256, 512, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=False)
+    (10): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (11): LeakyReLU(negative_slope=0.02, inplace=True)
+  )
+  (up_sample_block): Sequential(
+    (0): ConvTranspose2d(512, 256, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=False)
+    (1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (2): LeakyReLU(negative_slope=0.02, inplace=True)
+    (3): ConvTranspose2d(256, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=False)
+    (4): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (5): LeakyReLU(negative_slope=0.02, inplace=True)
+    (6): ConvTranspose2d(128, 64, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1), bias=False)
+    (7): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (8): LeakyReLU(negative_slope=0.02, inplace=True)
+    (9): ConvTranspose2d(64, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+    (10): Sigmoid()
+  )
+))
+('gen_opt', Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 0.0002
+    maximize: False
+    weight_decay: 0
+))
+('r1', EDT_Loss())
+('lambr1', 1.0)
+('r2', BCELoss())
+('r3', None)
+('lambr2', 1.0)
+('lambr3', 6.0)
+('n_epochs', 100)
+('batch_size', 16)
+('device', 'cuda:1')
+('metrics', MetricCollection(
+  (chamfer): ChamferDistance2dMetric()
+  (mse): MeanSquaredError()
+  (psnr): PSNRMetricCPU()
+  (ssim): SSIMMetricCPU()
+))
+('display_step', 10)
+('plot_step', 1)
+('test_dataset', <_dataset_class.MyDataset object at 0x7f5672f21350>)
+('my_dataset', <_dataset_class.MyDataset object at 0x7f568b28c590>)
+('save_checkpoints', False)
+('experiment_dir', 'exp_light1/')
+('f', <_io.TextIOWrapper name='exp_light1/parameters.txt' mode='w' encoding='UTF-8'>)

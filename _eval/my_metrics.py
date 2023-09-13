@@ -3,8 +3,6 @@ from torch import nn
 import torchmetrics
 import skimage
 import kornia
-from torchvision.utils import save_image
-from utils import normalize
 
 
 class SSIMMetric(torchmetrics.Metric):

@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from utils import crop
+from _utils.utils import crop
 
 class ContractingBlock(nn.Module):
     '''
@@ -94,7 +94,7 @@ class FeatureMapBlock(nn.Module):
 """
 Whole Model
 """
-class UNet(nn.Module):
+class UNetCrop(nn.Module):
     '''
     A series of 4 contracting blocks followed by 4 expanding blocks to
     transform an input image into the corresponding paired image, with an upfeature
@@ -104,8 +104,9 @@ class UNet(nn.Module):
         output_channels: the number of channels to expect for a given output
     '''
     def __init__(self, input_channels, output_channels, hidden_channels=64):
-        super(UNet, self).__init__()
+        super(UNetCrop, self).__init__()
         # "Every step in the expanding path consists of an upsampling of the feature map"
+        print('Using UNetCrop')
         self.upfeature = FeatureMapBlock(input_channels, hidden_channels)
         self.contract1 = ContractingBlock(hidden_channels)
         self.contract2 = ContractingBlock(hidden_channels * 2)
@@ -116,6 +117,7 @@ class UNet(nn.Module):
         self.expand3 = ExpandingBlock(hidden_channels * 4)
         self.expand4 = ExpandingBlock(hidden_channels * 2)
         self.downfeature = FeatureMapBlock(hidden_channels, output_channels)
+        self.activation = nn.Sigmoid()
 
     def forward(self, i1, i2):
         x0 = self.upfeature(i1, i2)
@@ -128,4 +130,4 @@ class UNet(nn.Module):
         x7 = self.expand3(x6, x1)
         x8 = self.expand4(x7, x0)
         xn = self.downfeature(x8)
-        return xn
+        return self.activation(xn)

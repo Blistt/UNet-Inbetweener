@@ -95,7 +95,7 @@ if __name__ == '__main__':
     '''-------------------------------------- Visualization parameters --------------------------------------'''
     display_step = config.getint('display_step')                # How many times per epoch to display/visualize the images
     plot_step = config.getint('plot_step')                      # How many times per epoch to plot the loss
-    experiment_dir = os.path.splitext(os.path.basename(args.config))[0] + '/'
+    experiment_dir = '/data/farriaga/Experiments/' + os.path.splitext(os.path.basename(args.config))[0] + '/'
     print('config_file: ', os.path.splitext(os.path.basename(args.config))[0] + '/')
     print('experiment_dir: ', experiment_dir)
     if not os.path.exists(experiment_dir): os.makedirs(experiment_dir)

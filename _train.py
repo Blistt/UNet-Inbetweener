@@ -20,7 +20,7 @@ from _utils.utils import get_edt
 
 
 def train(tra_dataset, gen, gen_opt, r1=nn.L1Loss(), lambr1=1.0, r2=None, r3=None, lambr2=None, lambr3=None, n_epochs=10,
-          batch_size=12, device='cuda:0', metrics=None, display_step=4, plot_step=10, test_dataset=None, my_dataset=None,
+          batch_size=12, device='cuda:0', metrics=None, display_step=4, plot_step=10, val_dataset=None, test_dataset=None,
           save_checkpoints=True, experiment_dir='exp/'):  
     
     # Prints all function parameters in experiment directory
@@ -35,7 +35,6 @@ def train(tra_dataset, gen, gen_opt, r1=nn.L1Loss(), lambr1=1.0, r2=None, r3=Non
     
     # stores generator losses
     tr_gen_losses = []  
-    tr_disc_losses = []
     # stores discriminator losses
     test_gen_losses = []
     test_disc_losses = []
@@ -78,19 +77,19 @@ def train(tra_dataset, gen, gen_opt, r1=nn.L1Loss(), lambr1=1.0, r2=None, r3=Non
         '''
         ######################## VALIDATION ############################
         '''
-        if test_dataset is not None:
+        if val_dataset is not None:
             os.makedirs(experiment_dir+'test/', exist_ok=True)
             torch.cuda.empty_cache()    # Free up unused memory before starting testing process
             gen.eval()     # Set the model to evaluation mode
             '''Evaluate the model on the test dataset'''
             with torch.no_grad():
-                test_gen_loss, test_disc_loss, results_e, results_batch = test(test_dataset, gen, epoch, 
+                test_gen_loss, test_disc_loss, results_e, results_batch = test(val_dataset, gen, epoch, 
                                                                            results_batch=results_batch, display_step=display_step, 
                                                                            plot_step=plot_step, r1=r1, lambr1=lambr1, r2=r2, r3=r3, 
                                                                            lambr2=lambr2, lambr3=lambr3, batch_size=batch_size, 
                                                                            metrics=metrics, device=device, 
                                                                            experiment_dir=experiment_dir+'test/')
-            # Aggregates test losses for the whole epoch
+            # Aggregates test losses for the whole epoch (these are lists, so addition means appending)
             test_gen_losses += test_gen_loss
             test_disc_losses += test_disc_loss
             # Calculates epoch's metrics
@@ -99,14 +98,14 @@ def train(tra_dataset, gen, gen_opt, r1=nn.L1Loss(), lambr1=1.0, r2=None, r3=Non
             
         
         '''Performs testing in MY dataset if specified'''
-        if my_dataset is not None:
+        if test_dataset is not None:
             my_display_step = 1
             os.makedirs(experiment_dir+'cool_test/', exist_ok=True)
             # Free up unused memory before starting testing process
             torch.cuda.empty_cache()
             gen.eval()     # Set the model to evaluation mode              
             with torch.no_grad():
-                unused_loss = test(my_dataset, gen, epoch, display_step=my_display_step, plot_step=plot_step, 
+                unused_loss = test(test_dataset, gen, epoch, display_step=my_display_step, plot_step=plot_step, 
                                    r1=r1, lambr1=lambr1, r2=r2, r3=r3, lambr2=lambr2, lambr3=lambr3, batch_size=batch_size, 
                                     device=device, experiment_dir=experiment_dir+'cool_test/')
             
@@ -122,7 +121,11 @@ def train(tra_dataset, gen, gen_opt, r1=nn.L1Loss(), lambr1=1.0, r2=None, r3=Non
 
             # Saves checkpoing with model's current state
             if save_checkpoints:
-                torch.save(gen.state_dict(), experiment_dir + 'gen_checkpoint' + str(epoch) + '.pth')
+                if epoch > 0:
+                # Only save checkpoint if reaching the minimum chamfer metric
+                    if results_epoch['chamfer'][-1] <= min(results_epoch['chamfer']):
+                        torch.save(gen.state_dict(), experiment_dir + 'gen_checkpoint.pth')
+
 
             # Plots losses
             visualize_batch_loss(epoch, experiment_dir=experiment_dir, train_gen_losses=tr_gen_losses, 
